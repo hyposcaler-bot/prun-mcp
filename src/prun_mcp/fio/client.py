@@ -145,3 +145,28 @@ class FIOClient:
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching planet")
             raise FIOApiError(f"HTTP error: {e}") from e
+
+    async def get_all_recipes(self) -> list[dict[str, Any]]:
+        """Fetch all recipes as JSON.
+
+        Returns:
+            List of recipe dictionaries with inputs, outputs, building, and duration.
+
+        Raises:
+            FIOApiError: If the API returns an error.
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get("/recipes/allrecipes")
+
+            if response.status_code != 200:
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching all recipes")
+            raise FIOApiError(f"HTTP error: {e}") from e

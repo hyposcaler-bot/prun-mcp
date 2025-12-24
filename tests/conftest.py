@@ -197,6 +197,53 @@ SAMPLE_PLANET_KATOA = {
     "PlanetaryProjects": [],
 }
 
+# Sample recipes list from /recipes/allrecipes
+SAMPLE_RECIPES = [
+    {
+        "BuildingTicker": "PP1",
+        "RecipeName": "4xPE=>1xBSE",
+        "Inputs": [{"Ticker": "PE", "Amount": 4}],
+        "Outputs": [{"Ticker": "BSE", "Amount": 1}],
+        "TimeMs": 25920000,  # 7.2 hours
+    },
+    {
+        "BuildingTicker": "FP",
+        "RecipeName": "1xGRN 1xBEA 1xNUT=>10xRAT",
+        "Inputs": [
+            {"Ticker": "GRN", "Amount": 1},
+            {"Ticker": "BEA", "Amount": 1},
+            {"Ticker": "NUT", "Amount": 1},
+        ],
+        "Outputs": [{"Ticker": "RAT", "Amount": 10}],
+        "TimeMs": 21600000,  # 6 hours
+    },
+    {
+        "BuildingTicker": "FP",
+        "RecipeName": "1xMAI 1xBEA 1xVEG=>10xRAT",
+        "Inputs": [
+            {"Ticker": "MAI", "Amount": 1},
+            {"Ticker": "BEA", "Amount": 1},
+            {"Ticker": "VEG", "Amount": 1},
+        ],
+        "Outputs": [{"Ticker": "RAT", "Amount": 10}],
+        "TimeMs": 21600000,  # 6 hours
+    },
+    {
+        "BuildingTicker": "FRM",
+        "RecipeName": "1xH2O=>4xGRN",
+        "Inputs": [{"Ticker": "H2O", "Amount": 1}],
+        "Outputs": [{"Ticker": "GRN", "Amount": 4}],
+        "TimeMs": 51840000,  # 14.4 hours
+    },
+    {
+        "BuildingTicker": "PP1",
+        "RecipeName": "6xPE=>1xBBH",
+        "Inputs": [{"Ticker": "PE", "Amount": 6}],
+        "Outputs": [{"Ticker": "BBH", "Amount": 1}],
+        "TimeMs": 43200000,  # 12 hours
+    },
+]
+
 SAMPLE_PLANET_MONTEM = {
     "PlanetId": "b82e9f9c-5dd0-4c98-8d75-cfe5c3e8f8e5",
     "PlanetNaturalId": "UV-351a",
@@ -345,5 +392,15 @@ def mock_fio_planet_not_found_transport() -> MockTransport:
     return create_mock_transport(
         {
             "/planet/NOTEXIST": httpx.Response(204),
+        }
+    )
+
+
+@pytest.fixture
+def mock_fio_recipes_transport() -> MockTransport:
+    """Transport that returns successful responses for recipe endpoints."""
+    return create_mock_transport(
+        {
+            "/recipes/allrecipes": httpx.Response(200, json=SAMPLE_RECIPES),
         }
     )

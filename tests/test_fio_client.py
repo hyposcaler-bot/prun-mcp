@@ -10,6 +10,7 @@ from tests.conftest import (
     SAMPLE_MATERIAL_BSE,
     SAMPLE_MATERIALS,
     SAMPLE_PLANET_KATOA,
+    SAMPLE_RECIPES,
     MockTransport,
 )
 
@@ -246,5 +247,66 @@ async def test_get_planet_network_error() -> None:
 
         with pytest.raises(FIOApiError) as exc_info:
             await client.get_planet("Katoa")
+
+        assert "HTTP error" in str(exc_info.value)
+
+
+async def test_get_all_recipes_success(
+    mock_fio_recipes_transport: MockTransport,
+) -> None:
+    """Test successful fetch of all recipes."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_recipes_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        result = await client.get_all_recipes()
+
+        assert result == SAMPLE_RECIPES
+        assert len(result) == 5
+        assert result[0]["BuildingTicker"] == "PP1"
+        assert "Inputs" in result[0]
+        assert "Outputs" in result[0]
+
+
+async def test_get_all_recipes_api_error() -> None:
+    """Test API error when fetching all recipes."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/recipes/allrecipes":
+            return httpx.Response(500, text="Internal Server Error")
+        return httpx.Response(404, text="Not found")
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_all_recipes()
+
+        assert exc_info.value.status_code == 500
+
+
+async def test_get_all_recipes_network_error() -> None:
+    """Test network error handling for recipes fetch."""
+
+    def error_handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("Connection failed")
+
+    transport = httpx.MockTransport(error_handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_all_recipes()
 
         assert "HTTP error" in str(exc_info.value)
