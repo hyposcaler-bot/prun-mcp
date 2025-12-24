@@ -1,15 +1,12 @@
 """Material-related MCP tools."""
 
-import json
 import logging
 
 from mcp.types import TextContent
+from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.fio import FIOApiError, FIOClient, FIONotFoundError
-
-# TODO: Switch to TOON encoding when toon_format encoder is implemented
-# from toon_format import encode as toon_encode
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +36,7 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
 
     try:
         data = await client.get_material(ticker.upper())
-        # TODO: Use toon_encode(data) when encoder is implemented
-        return json.dumps(data, indent=2)
+        return toon_encode(data)
 
     except FIONotFoundError:
         return [TextContent(type="text", text=f"Material '{ticker}' not found")]

@@ -19,6 +19,10 @@ cd prun-mcp
 uv sync
 ```
 
+### Note on toon-format
+
+This project uses [toon-format](https://github.com/toon-format/toon-python) for TOON serialization (30-60% token reduction vs JSON). The library is installed directly from GitHub because the PyPI version (v0.1.0) has an unimplemented encoder. This is configured in `pyproject.toml` via `[tool.uv.sources]`.
+
 ## Usage
 
 ### Local
@@ -31,10 +35,10 @@ uv run prun-mcp
 
 ```bash
 # Build the image
-docker build -t prun-mcp .
+docker build -t prun-mcp:latest .
 
 # Run with STDIO transport
-docker run -i prun-mcp
+docker run -i prun-mcp:latest
 ```
 
 ### Claude Code Configuration
@@ -46,7 +50,7 @@ claude mcp add prun-mcp -- uv run --directory /path/to/prun-mcp prun-mcp
 
 **Add the server (Docker):**
 ```bash
-claude mcp add prun-mcp -- docker run -i prun-mcp
+claude mcp add prun-mcp -- docker run -i prun-mcp:latest
 ```
 
 **Management commands:**
@@ -77,7 +81,7 @@ Or with Docker:
   "mcpServers": {
     "prun-mcp": {
       "command": "docker",
-      "args": ["run", "-i", "prun-mcp"]
+      "args": ["run", "-i", "prun-mcp:latest"]
     }
   }
 }

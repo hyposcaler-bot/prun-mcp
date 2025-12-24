@@ -1,10 +1,10 @@
 """Tests for material tools."""
 
-import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from mcp.types import TextContent
+from toon_format import decode as toon_decode
 
 from prun_mcp.fio import FIOApiError, FIONotFoundError
 from prun_mcp.tools.materials import get_material_info
@@ -15,20 +15,21 @@ pytestmark = pytest.mark.anyio
 
 
 async def test_get_material_info_success() -> None:
-    """Test successful material info fetch returns JSON-encoded data."""
+    """Test successful material info fetch returns TOON-encoded data."""
     mock_client = AsyncMock()
     mock_client.get_material.return_value = SAMPLE_MATERIAL_BSE
 
     with patch("prun_mcp.tools.materials.get_fio_client", return_value=mock_client):
         result = await get_material_info("BSE")
 
-    # Result should be JSON-encoded string (TODO: will be TOON when encoder is ready)
+    # Result should be TOON-encoded string
     assert isinstance(result, str)
 
     # Decode and verify content
-    decoded = json.loads(result)
-    assert decoded["Ticker"] == "BSE"
-    assert decoded["Name"] == "basicStructuralElements"
+    decoded = toon_decode(result)
+    assert isinstance(decoded, dict)
+    assert decoded["Ticker"] == "BSE"  # type: ignore[index]
+    assert decoded["Name"] == "basicStructuralElements"  # type: ignore[index]
 
     # Verify client was called with uppercase ticker
     mock_client.get_material.assert_called_once_with("BSE")
