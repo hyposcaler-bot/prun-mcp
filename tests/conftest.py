@@ -4,7 +4,7 @@ import pytest
 import httpx
 
 
-# Sample material response from FIO API
+# Sample material response from FIO API (JSON format)
 SAMPLE_MATERIAL_BSE = {
     "MaterialId": "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d",
     "CategoryName": "construction prefabs",
@@ -14,6 +14,13 @@ SAMPLE_MATERIAL_BSE = {
     "Weight": 0.3,
     "Volume": 0.5,
 }
+
+# Sample CSV content from FIO API
+SAMPLE_MATERIALS_CSV = """Ticker,Name,CategoryName,Weight,Volume
+BSE,basicStructuralElements,construction prefabs,0.3,0.5
+RAT,rations,consumables (basic),0.21,0.1
+H2O,water,consumables (basic),0.1,0.1
+"""
 
 
 class MockTransport(httpx.MockTransport):
@@ -43,10 +50,11 @@ def create_mock_transport(responses: dict[str, httpx.Response]) -> MockTransport
 
 @pytest.fixture
 def mock_fio_success_transport() -> MockTransport:
-    """Transport that returns successful material response."""
+    """Transport that returns successful responses for material endpoints."""
     return create_mock_transport(
         {
             "/material/BSE": httpx.Response(200, json=SAMPLE_MATERIAL_BSE),
+            "/csv/materials": httpx.Response(200, text=SAMPLE_MATERIALS_CSV),
         }
     )
 
@@ -67,5 +75,6 @@ def mock_fio_error_transport() -> MockTransport:
     return create_mock_transport(
         {
             "/material/BSE": httpx.Response(500, text="Internal Server Error"),
+            "/csv/materials": httpx.Response(500, text="Internal Server Error"),
         }
     )
