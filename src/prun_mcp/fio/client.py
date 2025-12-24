@@ -113,3 +113,35 @@ class FIOClient:
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching all buildings")
             raise FIOApiError(f"HTTP error: {e}") from e
+
+    async def get_planet(self, planet: str) -> dict[str, Any]:
+        """Get planet information by ID, NaturalId, or Name.
+
+        Args:
+            planet: Planet identifier (e.g., "Katoa", "XK-745b", or PlanetId)
+
+        Returns:
+            Planet data dictionary with resources, buildings, workforce, etc.
+
+        Raises:
+            FIONotFoundError: If the planet is not found
+            FIOApiError: If the API returns an error
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get(f"/planet/{planet}")
+
+            if response.status_code == 204:
+                raise FIONotFoundError("Planet", planet)
+
+            if response.status_code != 200:
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching planet")
+            raise FIOApiError(f"HTTP error: {e}") from e

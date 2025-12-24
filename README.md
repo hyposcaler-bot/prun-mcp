@@ -93,6 +93,7 @@ Or with Docker:
 |----------|-------|---------------|
 | Materials | `get_material_info`, `refresh_materials_cache`, `get_all_materials` | [docs/tools/materials.md](docs/tools/materials.md) |
 | Buildings | `get_building_info`, `refresh_buildings_cache`, `search_buildings` | [docs/tools/buildings.md](docs/tools/buildings.md) |
+| Planets | `get_planet_info` | [docs/tools/planets.md](docs/tools/planets.md) |
 
 ## Development
 
@@ -129,7 +130,8 @@ src/prun_mcp/
 └── tools/
     ├── __init__.py
     ├── materials.py    # Material-related tools
-    └── buildings.py    # Building-related tools
+    ├── buildings.py    # Building-related tools
+    └── planets.py      # Planet-related tools (no cache)
 ```
 
 ## License

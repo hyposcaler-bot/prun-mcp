@@ -4,13 +4,13 @@ Tools for accessing building data from the Prosperous Universe game.
 
 ## get_building_info
 
-Get detailed information about one or more buildings by ticker symbol.
+Get detailed information about one or more buildings by ticker symbol or BuildingId.
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `ticker` | string | Yes | Building ticker symbol(s). Single (e.g., "PP1") or comma-separated (e.g., "PP1,HB1,FRM") |
+| `ticker` | string | Yes | Building ticker symbol(s) or BuildingId(s). Single (e.g., "PP1") or comma-separated (e.g., "PP1,HB1,FRM"). Also accepts 32-character hex BuildingId. |
 
 ### Response
 
@@ -40,6 +40,11 @@ get_building_info("PP1,HB1,FRM")
 ```
 get_building_info("PP1,INVALID,HB1")
 # Returns PP1 and HB1 data, plus not_found: ["INVALID"]
+```
+
+**By BuildingId:**
+```
+get_building_info("1d9c9787a38e11dd7f7cfec32245bb76")
 ```
 
 ---

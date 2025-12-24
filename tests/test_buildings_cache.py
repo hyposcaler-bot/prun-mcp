@@ -260,3 +260,35 @@ class TestBuildingsCache:
         buildings = cache2.search_buildings()
         assert len(buildings) == 3
         assert cache2._buildings is not None  # Now loaded
+
+    def test_get_building_by_id(self, tmp_path: Path) -> None:
+        """Test that get_building returns correct data when looked up by BuildingId."""
+        cache = BuildingsCache(cache_dir=tmp_path)
+        cache.refresh(SAMPLE_BUILDINGS)
+
+        # PP1 has BuildingId "1d9c9787a38e11dd7f7cfec32245bb76"
+        building = cache.get_building("1d9c9787a38e11dd7f7cfec32245bb76")
+        assert building is not None
+        assert building["Ticker"] == "PP1"
+        assert building["Name"] == "prefabPlant1"
+
+    def test_get_building_by_id_matches_ticker_lookup(self, tmp_path: Path) -> None:
+        """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
+        cache = BuildingsCache(cache_dir=tmp_path)
+        cache.refresh(SAMPLE_BUILDINGS)
+
+        # Step 1: Look up by BuildingId
+        building_id = "1d9c9787a38e11dd7f7cfec32245bb76"
+        by_id = cache.get_building(building_id)
+        assert by_id is not None
+
+        # Step 2: Extract the Ticker from that result
+        ticker = by_id["Ticker"]
+        assert ticker == "PP1"
+
+        # Step 3: Look up by that Ticker
+        by_ticker = cache.get_building(ticker)
+        assert by_ticker is not None
+
+        # Step 4: Verify both return the same data
+        assert by_id == by_ticker

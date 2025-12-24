@@ -148,3 +148,35 @@ class TestMaterialsCache:
         materials = cache2.get_all_materials()
         assert len(materials) == 3
         assert cache2._materials is not None  # Now loaded
+
+    def test_get_material_by_id(self, tmp_path: Path) -> None:
+        """Test that get_material returns correct data when looked up by MaterialId."""
+        cache = MaterialsCache(cache_dir=tmp_path)
+        cache.refresh(SAMPLE_MATERIALS)
+
+        # BSE has MaterialId "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d"
+        material = cache.get_material("4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d")
+        assert material is not None
+        assert material["Ticker"] == "BSE"
+        assert material["Name"] == "basicStructuralElements"
+
+    def test_get_material_by_id_matches_ticker_lookup(self, tmp_path: Path) -> None:
+        """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
+        cache = MaterialsCache(cache_dir=tmp_path)
+        cache.refresh(SAMPLE_MATERIALS)
+
+        # Step 1: Look up by MaterialId
+        material_id = "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d"
+        by_id = cache.get_material(material_id)
+        assert by_id is not None
+
+        # Step 2: Extract the Ticker from that result
+        ticker = by_id["Ticker"]
+        assert ticker == "BSE"
+
+        # Step 3: Look up by that Ticker
+        by_ticker = cache.get_material(ticker)
+        assert by_ticker is not None
+
+        # Step 4: Verify both return the same data
+        assert by_id == by_ticker

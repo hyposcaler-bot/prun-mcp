@@ -40,7 +40,8 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
 
     Args:
         ticker: Building ticker symbol(s). Can be single (e.g., "PP1")
-                or comma-separated (e.g., "PP1,HB1,FRM")
+                or comma-separated (e.g., "PP1,HB1,FRM").
+                Also accepts BuildingId (32-character hex string).
 
     Returns:
         TOON-encoded building data including name, area, expertise,
@@ -50,16 +51,16 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         await _ensure_buildings_cache_populated()
         cache = get_buildings_cache()
 
-        # Parse comma-separated tickers
-        tickers = [t.strip().upper() for t in ticker.split(",")]
+        # Parse comma-separated identifiers
+        identifiers = [t.strip() for t in ticker.split(",")]
 
         buildings = []
         not_found = []
 
-        for t in tickers:
-            data = cache.get_building(t)
+        for identifier in identifiers:
+            data = cache.get_building(identifier)
             if data is None:
-                not_found.append(t)
+                not_found.append(identifier)
             else:
                 buildings.append(data)
 

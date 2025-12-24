@@ -174,6 +174,44 @@ class TestGetBuildingInfo:
         mock_client.get_all_buildings.assert_called_once()
         assert cache.is_valid()
 
+    async def test_lookup_by_building_id(self, tmp_path: Path) -> None:
+        """Test lookup by BuildingId returns correct data."""
+        cache = create_populated_cache(tmp_path)
+
+        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+            # PP1 has BuildingId "1d9c9787a38e11dd7f7cfec32245bb76"
+            result = await get_building_info("1d9c9787a38e11dd7f7cfec32245bb76")
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        buildings = decoded["buildings"]  # type: ignore[index]
+        assert len(buildings) == 1
+        assert buildings[0]["Ticker"] == "PP1"  # type: ignore[index]
+
+    async def test_lookup_by_id_matches_ticker_lookup(self, tmp_path: Path) -> None:
+        """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
+        cache = create_populated_cache(tmp_path)
+
+        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+            # Step 1: Look up by BuildingId
+            result_by_id = await get_building_info("1d9c9787a38e11dd7f7cfec32245bb76")
+            assert isinstance(result_by_id, str)
+            decoded_by_id = toon_decode(result_by_id)
+            buildings_by_id = decoded_by_id["buildings"]  # type: ignore[index]
+
+            # Step 2: Extract the Ticker
+            ticker = buildings_by_id[0]["Ticker"]  # type: ignore[index]
+            assert ticker == "PP1"
+
+            # Step 3: Look up by Ticker
+            result_by_ticker = await get_building_info(ticker)
+            assert isinstance(result_by_ticker, str)
+            decoded_by_ticker = toon_decode(result_by_ticker)
+            buildings_by_ticker = decoded_by_ticker["buildings"]  # type: ignore[index]
+
+            # Step 4: Verify both return the same data
+            assert buildings_by_id[0] == buildings_by_ticker[0]  # type: ignore[index]
+
 
 class TestRefreshBuildingsCache:
     """Tests for refresh_buildings_cache tool."""

@@ -9,6 +9,7 @@ from tests.conftest import (
     SAMPLE_BUILDINGS,
     SAMPLE_MATERIAL_BSE,
     SAMPLE_MATERIALS,
+    SAMPLE_PLANET_KATOA,
     MockTransport,
 )
 
@@ -155,3 +156,95 @@ async def test_get_all_buildings_api_error() -> None:
             await client.get_all_buildings()
 
         assert exc_info.value.status_code == 500
+
+
+async def test_get_planet_success(
+    mock_fio_planet_success_transport: MockTransport,
+) -> None:
+    """Test successful planet fetch by name."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_planet_success_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        result = await client.get_planet("Katoa")
+
+        assert result == SAMPLE_PLANET_KATOA
+        assert result["PlanetName"] == "Katoa"
+        assert result["PlanetNaturalId"] == "XK-745b"
+
+
+async def test_get_planet_by_natural_id(
+    mock_fio_planet_success_transport: MockTransport,
+) -> None:
+    """Test successful planet fetch by natural ID."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_planet_success_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        result = await client.get_planet("XK-745b")
+
+        assert result["PlanetName"] == "Katoa"
+
+
+async def test_get_planet_not_found(
+    mock_fio_planet_not_found_transport: MockTransport,
+) -> None:
+    """Test planet not found (204 response)."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_planet_not_found_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIONotFoundError) as exc_info:
+            await client.get_planet("NOTEXIST")
+
+        assert exc_info.value.resource_type == "Planet"
+        assert exc_info.value.identifier == "NOTEXIST"
+        assert exc_info.value.status_code == 204
+
+
+async def test_get_planet_api_error() -> None:
+    """Test API error when fetching planet."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/planet/Katoa":
+            return httpx.Response(500, text="Internal Server Error")
+        return httpx.Response(404, text="Not found")
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_planet("Katoa")
+
+        assert exc_info.value.status_code == 500
+
+
+async def test_get_planet_network_error() -> None:
+    """Test network error handling for planet fetch."""
+
+    def error_handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("Connection failed")
+
+    transport = httpx.MockTransport(error_handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_planet("Katoa")
+
+        assert "HTTP error" in str(exc_info.value)

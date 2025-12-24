@@ -4,13 +4,13 @@ Tools for accessing material data from the Prosperous Universe game.
 
 ## get_material_info
 
-Get information about one or more materials by ticker symbol.
+Get information about one or more materials by ticker symbol or MaterialId.
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `ticker` | string | Yes | Material ticker symbol(s). Single (e.g., "BSE") or comma-separated (e.g., "BSE,RAT,H2O") |
+| `ticker` | string | Yes | Material ticker symbol(s) or MaterialId(s). Single (e.g., "BSE") or comma-separated (e.g., "BSE,RAT,H2O"). Also accepts 32-character hex MaterialId. |
 
 ### Response
 
@@ -38,6 +38,11 @@ get_material_info("BSE,RAT,H2O")
 ```
 get_material_info("BSE,INVALID,H2O")
 # Returns BSE and H2O data, plus not_found: ["INVALID"]
+```
+
+**By MaterialId (useful for cross-referencing from planet data):**
+```
+get_material_info("ec8dbb1d3f51d89c61b6f58fdd64a7f0")
 ```
 
 ---

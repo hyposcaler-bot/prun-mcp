@@ -168,6 +168,44 @@ class TestGetMaterialInfo:
         mock_client.get_all_materials.assert_called_once()
         assert cache.is_valid()
 
+    async def test_lookup_by_material_id(self, tmp_path: Path) -> None:
+        """Test lookup by MaterialId returns correct data."""
+        cache = create_populated_cache(tmp_path)
+
+        with patch("prun_mcp.tools.materials.get_materials_cache", return_value=cache):
+            # BSE has MaterialId "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d"
+            result = await get_material_info("4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d")
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        materials = decoded["materials"]  # type: ignore[index]
+        assert len(materials) == 1
+        assert materials[0]["Ticker"] == "BSE"  # type: ignore[index]
+
+    async def test_lookup_by_id_matches_ticker_lookup(self, tmp_path: Path) -> None:
+        """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
+        cache = create_populated_cache(tmp_path)
+
+        with patch("prun_mcp.tools.materials.get_materials_cache", return_value=cache):
+            # Step 1: Look up by MaterialId
+            result_by_id = await get_material_info("4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d")
+            assert isinstance(result_by_id, str)
+            decoded_by_id = toon_decode(result_by_id)
+            materials_by_id = decoded_by_id["materials"]  # type: ignore[index]
+
+            # Step 2: Extract the Ticker
+            ticker = materials_by_id[0]["Ticker"]  # type: ignore[index]
+            assert ticker == "BSE"
+
+            # Step 3: Look up by Ticker
+            result_by_ticker = await get_material_info(ticker)
+            assert isinstance(result_by_ticker, str)
+            decoded_by_ticker = toon_decode(result_by_ticker)
+            materials_by_ticker = decoded_by_ticker["materials"]  # type: ignore[index]
+
+            # Step 4: Verify both return the same data
+            assert materials_by_id[0] == materials_by_ticker[0]  # type: ignore[index]
+
 
 class TestRefreshMaterialsCache:
     """Tests for refresh_materials_cache tool."""

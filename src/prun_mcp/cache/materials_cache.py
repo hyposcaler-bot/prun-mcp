@@ -27,6 +27,7 @@ class MaterialsCache:
         self.cache_file = self.cache_dir / "materials.json"
         self.ttl_hours = ttl_hours
         self._materials: dict[str, dict[str, Any]] | None = None
+        self._materials_by_id: dict[str, dict[str, Any]] | None = None
         self._loaded_at: datetime | None = None
 
     def is_valid(self) -> bool:
@@ -46,25 +47,31 @@ class MaterialsCache:
         """Load materials from JSON file into memory."""
         if not self.cache_file.exists():
             self._materials = None
+            self._materials_by_id = None
             self._loaded_at = None
             return
 
         self._materials = {}
+        self._materials_by_id = {}
         with open(self.cache_file, encoding="utf-8") as f:
             materials_list = json.load(f)
             for material in materials_list:
                 ticker = material.get("Ticker", "")
+                material_id = material.get("MaterialId", "")
                 if ticker:
                     self._materials[ticker.upper()] = material
+                if material_id:
+                    self._materials_by_id[material_id.lower()] = material
 
         self._loaded_at = datetime.now()
         logger.info("Loaded %d materials from cache", len(self._materials))
 
-    def get_material(self, ticker: str) -> dict[str, Any] | None:
-        """Get a material by ticker from the cache.
+    def get_material(self, identifier: str) -> dict[str, Any] | None:
+        """Get a material by ticker or MaterialId from the cache.
 
         Args:
-            ticker: Material ticker symbol (e.g., "BSE", "RAT")
+            identifier: Material ticker symbol (e.g., "BSE", "RAT") or
+                       MaterialId (32-character hex string).
 
         Returns:
             Material data dictionary or None if not found.
@@ -76,7 +83,19 @@ class MaterialsCache:
             else:
                 return None
 
-        return self._materials.get(ticker.upper()) if self._materials else None
+        if not self._materials:
+            return None
+
+        # Try ticker first (uppercase)
+        result = self._materials.get(identifier.upper())
+        if result:
+            return result
+
+        # Try MaterialId (lowercase)
+        if self._materials_by_id:
+            return self._materials_by_id.get(identifier.lower())
+
+        return None
 
     def refresh(self, materials: list[dict[str, Any]]) -> None:
         """Refresh the cache with new materials data.
@@ -93,10 +112,14 @@ class MaterialsCache:
 
         # Parse and load into memory
         self._materials = {}
+        self._materials_by_id = {}
         for material in materials:
             ticker = material.get("Ticker", "")
+            material_id = material.get("MaterialId", "")
             if ticker:
                 self._materials[ticker.upper()] = material
+            if material_id:
+                self._materials_by_id[material_id.lower()] = material
 
         self._loaded_at = datetime.now()
         logger.info("Refreshed cache with %d materials", len(self._materials))
@@ -108,6 +131,7 @@ class MaterialsCache:
             logger.info("Cache invalidated")
 
         self._materials = None
+        self._materials_by_id = None
         self._loaded_at = None
 
     def material_count(self) -> int:

@@ -48,7 +48,8 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
 
     Args:
         ticker: Material ticker symbol(s). Can be single (e.g., "BSE")
-                or comma-separated (e.g., "BSE,RAT,H2O")
+                or comma-separated (e.g., "BSE,RAT,H2O").
+                Also accepts MaterialId (32-character hex string).
 
     Returns:
         TOON-encoded material data including name, category, weight, and volume.
@@ -57,16 +58,16 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
         await _ensure_cache_populated()
         cache = get_materials_cache()
 
-        # Parse comma-separated tickers
-        tickers = [t.strip().upper() for t in ticker.split(",")]
+        # Parse comma-separated identifiers
+        identifiers = [t.strip() for t in ticker.split(",")]
 
         materials = []
         not_found = []
 
-        for t in tickers:
-            data = cache.get_material(t)
+        for identifier in identifiers:
+            data = cache.get_material(identifier)
             if data is None:
-                not_found.append(t)
+                not_found.append(identifier)
             else:
                 materials.append(data)
 

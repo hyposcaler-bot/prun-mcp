@@ -31,6 +31,7 @@ class BuildingsCache:
         self.cache_file = self.cache_dir / "buildings.json"
         self.ttl_hours = ttl_hours
         self._buildings: dict[str, dict[str, Any]] | None = None
+        self._buildings_by_id: dict[str, dict[str, Any]] | None = None
         self._loaded_at: datetime | None = None
 
     def is_valid(self) -> bool:
@@ -50,25 +51,31 @@ class BuildingsCache:
         """Load buildings from JSON file into memory."""
         if not self.cache_file.exists():
             self._buildings = None
+            self._buildings_by_id = None
             self._loaded_at = None
             return
 
         self._buildings = {}
+        self._buildings_by_id = {}
         with open(self.cache_file, encoding="utf-8") as f:
             buildings_list = json.load(f)
             for building in buildings_list:
                 ticker = building.get("Ticker", "")
+                building_id = building.get("BuildingId", "")
                 if ticker:
                     self._buildings[ticker.upper()] = building
+                if building_id:
+                    self._buildings_by_id[building_id.lower()] = building
 
         self._loaded_at = datetime.now()
         logger.info("Loaded %d buildings from cache", len(self._buildings))
 
-    def get_building(self, ticker: str) -> dict[str, Any] | None:
-        """Get a building by ticker from the cache.
+    def get_building(self, identifier: str) -> dict[str, Any] | None:
+        """Get a building by ticker or BuildingId from the cache.
 
         Args:
-            ticker: Building ticker symbol (e.g., "PP1", "HB1")
+            identifier: Building ticker symbol (e.g., "PP1", "HB1") or
+                       BuildingId (32-character hex string).
 
         Returns:
             Building data dictionary with full details, or None if not found.
@@ -80,7 +87,19 @@ class BuildingsCache:
             else:
                 return None
 
-        return self._buildings.get(ticker.upper()) if self._buildings else None
+        if not self._buildings:
+            return None
+
+        # Try ticker first (uppercase)
+        result = self._buildings.get(identifier.upper())
+        if result:
+            return result
+
+        # Try BuildingId (lowercase)
+        if self._buildings_by_id:
+            return self._buildings_by_id.get(identifier.lower())
+
+        return None
 
     def refresh(self, buildings: list[dict[str, Any]]) -> None:
         """Refresh the cache with new buildings data.
@@ -97,10 +116,14 @@ class BuildingsCache:
 
         # Parse and load into memory
         self._buildings = {}
+        self._buildings_by_id = {}
         for building in buildings:
             ticker = building.get("Ticker", "")
+            building_id = building.get("BuildingId", "")
             if ticker:
                 self._buildings[ticker.upper()] = building
+            if building_id:
+                self._buildings_by_id[building_id.lower()] = building
 
         self._loaded_at = datetime.now()
         logger.info("Refreshed cache with %d buildings", len(self._buildings))
@@ -112,6 +135,7 @@ class BuildingsCache:
             logger.info("Buildings cache invalidated")
 
         self._buildings = None
+        self._buildings_by_id = None
         self._loaded_at = None
 
     def building_count(self) -> int:
