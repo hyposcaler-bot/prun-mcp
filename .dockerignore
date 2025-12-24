@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.nox
+
+# Build
+build
+dist
+*.egg-info
+
+# Project specific
+cache/
+docs/
+tests/
+CLAUDE.md
+prun-mcp-spec.md
+.claude/

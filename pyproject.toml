@@ -1,0 +1,29 @@
+[project]
+name = "prun-mcp"
+version = "0.1.0"
+description = "MCP server for Prosperous Universe game data via FIO API"
+readme = "README.md"
+authors = [
+    { name = "Fanshaw Dennis", email = "64549250+hyposcaler-bot@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp>=1.25.0",
+    "toon-format>=0.1.0",
+]
+
+[project.scripts]
+prun-mcp = "prun_mcp.server:main"
+
+[build-system]
+requires = ["uv_build>=0.9.15,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.407",
+    "pytest>=9.0.2",
+    "pytest-anyio>=0.0.0",
+    "ruff>=0.14.10",
+]
