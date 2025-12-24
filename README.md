@@ -89,11 +89,10 @@ Or with Docker:
 
 ## Available Tools
 
-### Materials
-
-| Tool | Description |
-|------|-------------|
-| `get_material_info` | Get information about a material by its ticker symbol (e.g., "BSE", "RAT", "H2O") |
+| Category | Tools | Documentation |
+|----------|-------|---------------|
+| Materials | `get_material_info`, `refresh_materials_cache`, `get_all_materials` | [docs/tools/materials.md](docs/tools/materials.md) |
+| Buildings | `get_building_info`, `refresh_buildings_cache`, `search_buildings` | [docs/tools/buildings.md](docs/tools/buildings.md) |
 
 ## Development
 
@@ -123,9 +122,14 @@ src/prun_mcp/
 │   ├── __init__.py
 │   ├── client.py       # HTTP client for FIO API
 │   └── exceptions.py   # Custom exceptions
+├── cache/
+│   ├── __init__.py
+│   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
+│   └── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
 └── tools/
     ├── __init__.py
-    └── materials.py    # Material-related tools
+    ├── materials.py    # Material-related tools
+    └── buildings.py    # Building-related tools
 ```
 
 ## License

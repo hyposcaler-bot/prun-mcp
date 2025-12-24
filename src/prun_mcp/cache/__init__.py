@@ -1,5 +1,6 @@
-"""CSV-based caching layer for FIO API data."""
+"""JSON-based caching layer for FIO API data."""
 
-from prun_mcp.cache.csv_store import MaterialsCache
+from prun_mcp.cache.buildings_cache import BuildingsCache
+from prun_mcp.cache.materials_cache import MaterialsCache
 
-__all__ = ["MaterialsCache"]
+__all__ = ["BuildingsCache", "MaterialsCache"]

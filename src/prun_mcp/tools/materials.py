@@ -1,6 +1,7 @@
 """Material-related MCP tools."""
 
 import logging
+from typing import Any
 
 from mcp.types import TextContent
 from toon_format import encode as toon_encode
@@ -37,8 +38,8 @@ async def _ensure_cache_populated() -> None:
     cache = get_materials_cache()
     if not cache.is_valid():
         client = get_fio_client()
-        csv_content = await client.get_all_materials_csv()
-        cache.refresh(csv_content)
+        materials = await client.get_all_materials()
+        cache.refresh(materials)
 
 
 @mcp.tool()
@@ -46,7 +47,8 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
     """Get information about a material by its ticker symbol.
 
     Args:
-        ticker: Material ticker symbol (e.g., "BSE", "RAT", "H2O")
+        ticker: Material ticker symbol(s). Can be single (e.g., "BSE")
+                or comma-separated (e.g., "BSE,RAT,H2O")
 
     Returns:
         TOON-encoded material data including name, category, weight, and volume.
@@ -54,12 +56,33 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
     try:
         await _ensure_cache_populated()
         cache = get_materials_cache()
-        data = cache.get_material(ticker.upper())
 
-        if data is None:
-            return [TextContent(type="text", text=f"Material '{ticker}' not found")]
+        # Parse comma-separated tickers
+        tickers = [t.strip().upper() for t in ticker.split(",")]
 
-        return toon_encode(data)
+        materials = []
+        not_found = []
+
+        for t in tickers:
+            data = cache.get_material(t)
+            if data is None:
+                not_found.append(t)
+            else:
+                materials.append(data)
+
+        # Build response
+        if not materials and not_found:
+            return [
+                TextContent(
+                    type="text", text=f"Materials not found: {', '.join(not_found)}"
+                )
+            ]
+
+        result: dict[str, Any] = {"materials": materials}
+        if not_found:
+            result["not_found"] = not_found
+
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching materials")
@@ -80,11 +103,29 @@ async def refresh_materials_cache() -> str:
         cache.invalidate()
 
         client = get_fio_client()
-        csv_content = await client.get_all_materials_csv()
-        cache.refresh(csv_content)
+        materials = await client.get_all_materials()
+        cache.refresh(materials)
 
         return f"Cache refreshed with {cache.material_count()} materials"
 
     except FIOApiError as e:
         logger.exception("FIO API error while refreshing cache")
         return f"Failed to refresh cache: {e}"
+
+
+@mcp.tool()
+async def get_all_materials() -> str | list[TextContent]:
+    """Get all materials from the cache.
+
+    Returns:
+        TOON-encoded list of all materials with their properties.
+    """
+    try:
+        await _ensure_cache_populated()
+        cache = get_materials_cache()
+        materials = cache.get_all_materials()
+        return toon_encode(materials)
+
+    except FIOApiError as e:
+        logger.exception("FIO API error while fetching materials")
+        return [TextContent(type="text", text=f"FIO API error: {e}")]

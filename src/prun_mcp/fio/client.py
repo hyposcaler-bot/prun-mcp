@@ -63,18 +63,18 @@ class FIOClient:
             logger.exception("HTTP error while fetching material")
             raise FIOApiError(f"HTTP error: {e}") from e
 
-    async def get_all_materials_csv(self) -> str:
-        """Fetch all materials in CSV format.
+    async def get_all_materials(self) -> list[dict[str, Any]]:
+        """Fetch all materials as JSON.
 
         Returns:
-            Raw CSV content with all materials.
+            List of material dictionaries with full details.
 
         Raises:
             FIOApiError: If the API returns an error.
         """
         client = await self._get_client()
         try:
-            response = await client.get("/csv/materials")
+            response = await client.get("/material/allmaterials")
 
             if response.status_code != 200:
                 raise FIOApiError(
@@ -82,8 +82,34 @@ class FIOClient:
                     status_code=response.status_code,
                 )
 
-            return response.text
+            return response.json()
 
         except httpx.HTTPError as e:
-            logger.exception("HTTP error while fetching materials CSV")
+            logger.exception("HTTP error while fetching all materials")
+            raise FIOApiError(f"HTTP error: {e}") from e
+
+    async def get_all_buildings(self) -> list[dict[str, Any]]:
+        """Fetch all buildings as JSON.
+
+        Returns:
+            List of building dictionaries with full details including
+            BuildingCosts, Recipes, and workforce requirements.
+
+        Raises:
+            FIOApiError: If the API returns an error.
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get("/building/allbuildings")
+
+            if response.status_code != 200:
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching all buildings")
             raise FIOApiError(f"HTTP error: {e}") from e
