@@ -97,6 +97,12 @@ Or with Docker:
 | Recipes | `get_recipe_info`, `search_recipes`, `refresh_recipes_cache` | [docs/tools/recipes.md](docs/tools/recipes.md) |
 | Exchange | `get_exchange_prices`, `get_exchange_all` | [docs/tools/exchange.md](docs/tools/exchange.md) |
 
+## Configuration
+
+| Environment Variable | Description | Default |
+|---------------------|-------------|---------|
+| `PRUN_MCP_CACHE_DIR` | Directory for cache files (materials, buildings, recipes) | `cache` (relative to working directory) |
+
 ## Development
 
 ```bash

@@ -12,6 +12,17 @@ logger = logging.getLogger(__name__)
 FIO_BASE_URL = "https://rest.fnar.net"
 
 
+def _log_api_error(response: httpx.Response, context: str) -> None:
+    """Log API error with response body for debugging."""
+    body = response.text[:500] if response.text else "(empty)"
+    logger.error(
+        "FIO API error during %s: status=%d body=%s",
+        context,
+        response.status_code,
+        body,
+    )
+
+
 class FIOClient:
     """Async HTTP client for the FIO REST API."""
 
@@ -22,7 +33,10 @@ class FIOClient:
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create the HTTP client."""
         if self._client is None:
-            self._client = httpx.AsyncClient(base_url=self.base_url)
+            self._client = httpx.AsyncClient(
+                base_url=self.base_url,
+                timeout=httpx.Timeout(30.0, connect=10.0),
+            )
         return self._client
 
     async def close(self) -> None:
@@ -52,6 +66,7 @@ class FIOClient:
                 raise FIONotFoundError("Material", ticker)
 
             if response.status_code != 200:
+                _log_api_error(response, f"get_material({ticker})")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -77,6 +92,7 @@ class FIOClient:
             response = await client.get("/material/allmaterials")
 
             if response.status_code != 200:
+                _log_api_error(response, "get_all_materials")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -103,6 +119,7 @@ class FIOClient:
             response = await client.get("/building/allbuildings")
 
             if response.status_code != 200:
+                _log_api_error(response, "get_all_buildings")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -135,6 +152,7 @@ class FIOClient:
                 raise FIONotFoundError("Planet", planet)
 
             if response.status_code != 200:
+                _log_api_error(response, f"get_planet({planet})")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -160,6 +178,7 @@ class FIOClient:
             response = await client.get("/recipes/allrecipes")
 
             if response.status_code != 200:
+                _log_api_error(response, "get_all_recipes")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -193,6 +212,7 @@ class FIOClient:
                 raise FIONotFoundError("Exchange", f"{ticker}.{exchange}")
 
             if response.status_code != 200:
+                _log_api_error(response, f"get_exchange_info({ticker}.{exchange})")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,
@@ -219,6 +239,7 @@ class FIOClient:
             response = await client.get("/exchange/all")
 
             if response.status_code != 200:
+                _log_api_error(response, "get_all_exchange_data")
                 raise FIOApiError(
                     f"FIO API error: {response.status_code}",
                     status_code=response.status_code,

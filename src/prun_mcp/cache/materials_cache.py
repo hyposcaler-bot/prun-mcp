@@ -2,11 +2,14 @@
 
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_CACHE_DIR = Path(os.environ.get("PRUN_MCP_CACHE_DIR", "cache"))
 
 
 class MaterialsCache:
@@ -20,10 +23,11 @@ class MaterialsCache:
         """Initialize the materials cache.
 
         Args:
-            cache_dir: Directory for cache files. Defaults to 'cache' in current directory.
+            cache_dir: Directory for cache files. Defaults to PRUN_MCP_CACHE_DIR
+                      env var or 'cache' in current directory.
             ttl_hours: Time-to-live for cache in hours. Defaults to 24.
         """
-        self.cache_dir = cache_dir or Path("cache")
+        self.cache_dir = cache_dir or DEFAULT_CACHE_DIR
         self.cache_file = self.cache_dir / "materials.json"
         self.ttl_hours = ttl_hours
         self._materials: dict[str, dict[str, Any]] | None = None
