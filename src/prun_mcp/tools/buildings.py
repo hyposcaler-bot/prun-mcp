@@ -170,7 +170,7 @@ async def search_buildings(
             expertise=expertise,
             workforce=workforce,
         )
-        return toon_encode(buildings)
+        return toon_encode({"buildings": buildings})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")

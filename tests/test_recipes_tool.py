@@ -173,8 +173,10 @@ class TestSearchRecipes:
         assert isinstance(result, str)
 
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 5
+        assert isinstance(decoded, dict)
+        assert "recipes" in decoded
+        recipes = decoded["recipes"]
+        assert len(recipes) == 5
 
     async def test_filter_by_building(self, tmp_path: Path) -> None:
         """Test filtering by building ticker."""
@@ -185,9 +187,10 @@ class TestSearchRecipes:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 2
-        for r in decoded:
+        assert isinstance(decoded, dict)
+        recipes = decoded["recipes"]
+        assert len(recipes) == 2
+        for r in recipes:
             assert r["BuildingTicker"] == "PP1"  # type: ignore[index]
 
     async def test_filter_by_input_tickers(self, tmp_path: Path) -> None:
@@ -199,9 +202,10 @@ class TestSearchRecipes:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 1
-        assert decoded[0]["RecipeName"] == "1xGRN 1xBEA 1xNUT=>10xRAT"  # type: ignore[index]
+        assert isinstance(decoded, dict)
+        recipes = decoded["recipes"]
+        assert len(recipes) == 1
+        assert recipes[0]["RecipeName"] == "1xGRN 1xBEA 1xNUT=>10xRAT"  # type: ignore[index]
 
     async def test_filter_by_output_tickers(self, tmp_path: Path) -> None:
         """Test filtering by output tickers."""
@@ -212,8 +216,9 @@ class TestSearchRecipes:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 2
+        assert isinstance(decoded, dict)
+        recipes = decoded["recipes"]
+        assert len(recipes) == 2
 
     async def test_combined_filters(self, tmp_path: Path) -> None:
         """Test combining multiple filters."""
@@ -226,8 +231,9 @@ class TestSearchRecipes:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 1
+        assert isinstance(decoded, dict)
+        recipes = decoded["recipes"]
+        assert len(recipes) == 1
 
     async def test_populates_cache_on_miss(self, tmp_path: Path) -> None:
         """Test that cache is populated when invalid."""

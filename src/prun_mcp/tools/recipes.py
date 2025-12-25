@@ -126,7 +126,7 @@ async def search_recipes(
             input_tickers=input_tickers,
             output_tickers=output_tickers,
         )
-        return toon_encode(recipes)
+        return toon_encode({"recipes": recipes})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")

@@ -277,10 +277,12 @@ class TestGetAllMaterials:
         assert isinstance(result, str)
 
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 3
+        assert isinstance(decoded, dict)
+        assert "materials" in decoded
+        materials = decoded["materials"]
+        assert len(materials) == 3
 
-        tickers = [m["Ticker"] for m in decoded]  # type: ignore[index]
+        tickers = [m["Ticker"] for m in materials]  # type: ignore[index]
         assert "BSE" in tickers
         assert "RAT" in tickers
         assert "H2O" in tickers

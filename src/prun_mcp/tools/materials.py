@@ -116,7 +116,7 @@ async def get_all_materials() -> str | list[TextContent]:
         await _ensure_cache_populated()
         cache = get_materials_cache()
         materials = cache.get_all_materials()
-        return toon_encode(materials)
+        return toon_encode({"materials": materials})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching materials")

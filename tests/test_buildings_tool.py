@@ -283,14 +283,16 @@ class TestSearchBuildings:
         assert isinstance(result, str)
 
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 3
+        assert isinstance(decoded, dict)
+        assert "buildings" in decoded
+        buildings = decoded["buildings"]
+        assert len(buildings) == 3
 
         # Verify only Ticker and Name are returned
-        for b in decoded:
+        for b in buildings:
             assert set(b.keys()) == {"Ticker", "Name"}  # type: ignore[union-attr]
 
-        tickers = [b["Ticker"] for b in decoded]  # type: ignore[index]
+        tickers = [b["Ticker"] for b in buildings]  # type: ignore[index]
         assert "PP1" in tickers
         assert "HB1" in tickers
         assert "FRM" in tickers
@@ -304,9 +306,10 @@ class TestSearchBuildings:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 1
-        assert decoded[0]["Ticker"] == "PP1"  # type: ignore[index]
+        assert isinstance(decoded, dict)
+        buildings = decoded["buildings"]
+        assert len(buildings) == 1
+        assert buildings[0]["Ticker"] == "PP1"  # type: ignore[index]
 
     async def test_filter_by_workforce(self, tmp_path: Path) -> None:
         """Test filtering by workforce type."""
@@ -318,8 +321,9 @@ class TestSearchBuildings:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 3
+        assert isinstance(decoded, dict)
+        buildings = decoded["buildings"]
+        assert len(buildings) == 3
 
     async def test_filter_by_commodity_tickers(self, tmp_path: Path) -> None:
         """Test filtering by commodity tickers (AND logic)."""
@@ -331,9 +335,10 @@ class TestSearchBuildings:
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
-        assert isinstance(decoded, list)
-        assert len(decoded) == 1
-        assert decoded[0]["Ticker"] == "PP1"  # type: ignore[index]
+        assert isinstance(decoded, dict)
+        buildings = decoded["buildings"]
+        assert len(buildings) == 1
+        assert buildings[0]["Ticker"] == "PP1"  # type: ignore[index]
 
     async def test_invalid_expertise_returns_error(self, tmp_path: Path) -> None:
         """Test that invalid expertise returns helpful error."""
