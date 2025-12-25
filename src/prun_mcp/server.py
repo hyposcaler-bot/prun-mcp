@@ -13,6 +13,7 @@ logging.basicConfig(
 # Import mcp instance and tools to register them
 from prun_mcp.app import mcp  # noqa: E402
 from prun_mcp.tools import buildings  # noqa: F401, E402
+from prun_mcp.tools import exchange  # noqa: F401, E402
 from prun_mcp.tools import materials  # noqa: F401, E402
 from prun_mcp.tools import planets  # noqa: F401, E402
 from prun_mcp.tools import recipes  # noqa: F401, E402

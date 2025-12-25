@@ -7,6 +7,8 @@ from prun_mcp.fio import FIOApiError, FIOClient, FIONotFoundError
 from prun_mcp.fio.client import FIO_BASE_URL
 from tests.conftest import (
     SAMPLE_BUILDINGS,
+    SAMPLE_EXCHANGE_ALL,
+    SAMPLE_EXCHANGE_RAT_CI1,
     SAMPLE_MATERIAL_BSE,
     SAMPLE_MATERIALS,
     SAMPLE_PLANET_KATOA,
@@ -308,5 +310,144 @@ async def test_get_all_recipes_network_error() -> None:
 
         with pytest.raises(FIOApiError) as exc_info:
             await client.get_all_recipes()
+
+        assert "HTTP error" in str(exc_info.value)
+
+
+async def test_get_exchange_info_success(
+    mock_fio_exchange_success_transport: MockTransport,
+) -> None:
+    """Test successful exchange info fetch."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_exchange_success_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        result = await client.get_exchange_info("RAT", "CI1")
+
+        assert result == SAMPLE_EXCHANGE_RAT_CI1
+        assert result["MaterialTicker"] == "RAT"
+        assert result["ExchangeCode"] == "CI1"
+        assert "BuyingOrders" in result
+        assert "SellingOrders" in result
+
+
+async def test_get_exchange_info_not_found(
+    mock_fio_exchange_not_found_transport: MockTransport,
+) -> None:
+    """Test exchange not found (204 response)."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_exchange_not_found_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIONotFoundError) as exc_info:
+            await client.get_exchange_info("INVALID", "CI1")
+
+        assert exc_info.value.resource_type == "Exchange"
+        assert exc_info.value.identifier == "INVALID.CI1"
+        assert exc_info.value.status_code == 204
+
+
+async def test_get_exchange_info_api_error() -> None:
+    """Test API error when fetching exchange info."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/exchange/RAT.CI1":
+            return httpx.Response(500, text="Internal Server Error")
+        return httpx.Response(404, text="Not found")
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_exchange_info("RAT", "CI1")
+
+        assert exc_info.value.status_code == 500
+
+
+async def test_get_exchange_info_network_error() -> None:
+    """Test network error handling for exchange fetch."""
+
+    def error_handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("Connection failed")
+
+    transport = httpx.MockTransport(error_handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_exchange_info("RAT", "CI1")
+
+        assert "HTTP error" in str(exc_info.value)
+
+
+async def test_get_all_exchange_data_success(
+    mock_fio_exchange_success_transport: MockTransport,
+) -> None:
+    """Test successful fetch of all exchange data."""
+    async with httpx.AsyncClient(
+        transport=mock_fio_exchange_success_transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        result = await client.get_all_exchange_data()
+
+        assert result == SAMPLE_EXCHANGE_ALL
+        assert len(result) == 3
+        assert result[0]["MaterialTicker"] == "RAT"
+        assert result[0]["ExchangeCode"] == "CI1"
+
+
+async def test_get_all_exchange_data_api_error() -> None:
+    """Test API error when fetching all exchange data."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/exchange/all":
+            return httpx.Response(500, text="Internal Server Error")
+        return httpx.Response(404, text="Not found")
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_all_exchange_data()
+
+        assert exc_info.value.status_code == 500
+
+
+async def test_get_all_exchange_data_network_error() -> None:
+    """Test network error handling for all exchange data fetch."""
+
+    def error_handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("Connection failed")
+
+    transport = httpx.MockTransport(error_handler)
+
+    async with httpx.AsyncClient(
+        transport=transport, base_url=FIO_BASE_URL
+    ) as http_client:
+        client = FIOClient()
+        client._client = http_client
+
+        with pytest.raises(FIOApiError) as exc_info:
+            await client.get_all_exchange_data()
 
         assert "HTTP error" in str(exc_info.value)

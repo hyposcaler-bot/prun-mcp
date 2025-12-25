@@ -170,3 +170,62 @@ class FIOClient:
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching all recipes")
             raise FIOApiError(f"HTTP error: {e}") from e
+
+    async def get_exchange_info(self, ticker: str, exchange: str) -> dict[str, Any]:
+        """Get exchange data for a single material on a specific exchange.
+
+        Args:
+            ticker: Material ticker symbol (e.g., "RAT", "BSE")
+            exchange: Exchange code (e.g., "CI1", "NC1")
+
+        Returns:
+            Exchange data dictionary with full order book, bid/ask, supply/demand.
+
+        Raises:
+            FIONotFoundError: If the ticker/exchange combination is not found
+            FIOApiError: If the API returns an error
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get(f"/exchange/{ticker}.{exchange}")
+
+            if response.status_code == 204:
+                raise FIONotFoundError("Exchange", f"{ticker}.{exchange}")
+
+            if response.status_code != 200:
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching exchange info")
+            raise FIOApiError(f"HTTP error: {e}") from e
+
+    async def get_all_exchange_data(self) -> list[dict[str, Any]]:
+        """Fetch all exchange summary data.
+
+        Returns:
+            List of exchange data dictionaries with bid/ask, supply/demand
+            for all materials on all exchanges (summary only, no order book).
+
+        Raises:
+            FIOApiError: If the API returns an error.
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get("/exchange/all")
+
+            if response.status_code != 200:
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching all exchange data")
+            raise FIOApiError(f"HTTP error: {e}") from e

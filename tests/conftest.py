@@ -404,3 +404,160 @@ def mock_fio_recipes_transport() -> MockTransport:
             "/recipes/allrecipes": httpx.Response(200, json=SAMPLE_RECIPES),
         }
     )
+
+
+# Sample exchange data (full order book) from /exchange/{ticker}.{exchange}
+SAMPLE_EXCHANGE_RAT_CI1 = {
+    "MaterialTicker": "RAT",
+    "ExchangeCode": "CI1",
+    "MMBuy": None,
+    "MMSell": None,
+    "Price": 166.0,
+    "PriceTimeEpochMs": 1700000000000,
+    "High": 180.0,
+    "AllTimeHigh": 300.0,
+    "Low": 160.0,
+    "AllTimeLow": 50.0,
+    "Ask": 175.0,
+    "AskCount": 8,
+    "Bid": 166.0,
+    "BidCount": 15,
+    "Supply": 5000,
+    "Demand": 12000,
+    "Traded": 500,
+    "VolumeAmount": 83000.0,
+    "PriceAverage": 166.0,
+    "NarrowPriceBandLow": 150.0,
+    "NarrowPriceBandHigh": 200.0,
+    "WidePriceBandLow": 100.0,
+    "WidePriceBandHigh": 250.0,
+    "BuyingOrders": [
+        {"CompanyCode": "ACME", "ItemCount": 100, "ItemCost": 166.0},
+        {"CompanyCode": "BOBS", "ItemCount": 200, "ItemCost": 165.0},
+    ],
+    "SellingOrders": [
+        {"CompanyCode": "CHEM", "ItemCount": 150, "ItemCost": 175.0},
+        {"CompanyCode": "DELI", "ItemCount": 100, "ItemCost": 180.0},
+    ],
+}
+
+SAMPLE_EXCHANGE_BSE_CI1 = {
+    "MaterialTicker": "BSE",
+    "ExchangeCode": "CI1",
+    "MMBuy": None,
+    "MMSell": None,
+    "Price": 450.0,
+    "PriceTimeEpochMs": 1700000000000,
+    "High": 500.0,
+    "AllTimeHigh": 800.0,
+    "Low": 400.0,
+    "AllTimeLow": 200.0,
+    "Ask": 460.0,
+    "AskCount": 5,
+    "Bid": 450.0,
+    "BidCount": 10,
+    "Supply": 2000,
+    "Demand": 8000,
+    "Traded": 200,
+    "VolumeAmount": 90000.0,
+    "PriceAverage": 450.0,
+    "NarrowPriceBandLow": 400.0,
+    "NarrowPriceBandHigh": 500.0,
+    "WidePriceBandLow": 300.0,
+    "WidePriceBandHigh": 600.0,
+    "BuyingOrders": [
+        {"CompanyCode": "ACME", "ItemCount": 50, "ItemCost": 450.0},
+    ],
+    "SellingOrders": [
+        {"CompanyCode": "CHEM", "ItemCount": 100, "ItemCost": 460.0},
+    ],
+}
+
+# Sample exchange summary data from /exchange/all (no order book)
+SAMPLE_EXCHANGE_ALL = [
+    {
+        "MaterialTicker": "RAT",
+        "ExchangeCode": "CI1",
+        "MMBuy": None,
+        "MMSell": None,
+        "Price": 166.0,
+        "PriceTimeEpochMs": 1700000000000,
+        "High": 180.0,
+        "AllTimeHigh": 300.0,
+        "Low": 160.0,
+        "AllTimeLow": 50.0,
+        "Ask": 175.0,
+        "AskCount": 8,
+        "Bid": 166.0,
+        "BidCount": 15,
+        "Supply": 5000,
+        "Demand": 12000,
+        "Traded": 500,
+        "VolumeAmount": 83000.0,
+        "PriceAverage": 166.0,
+    },
+    {
+        "MaterialTicker": "BSE",
+        "ExchangeCode": "CI1",
+        "MMBuy": None,
+        "MMSell": None,
+        "Price": 450.0,
+        "PriceTimeEpochMs": 1700000000000,
+        "High": 500.0,
+        "AllTimeHigh": 800.0,
+        "Low": 400.0,
+        "AllTimeLow": 200.0,
+        "Ask": 460.0,
+        "AskCount": 5,
+        "Bid": 450.0,
+        "BidCount": 10,
+        "Supply": 2000,
+        "Demand": 8000,
+        "Traded": 200,
+        "VolumeAmount": 90000.0,
+        "PriceAverage": 450.0,
+    },
+    {
+        "MaterialTicker": "RAT",
+        "ExchangeCode": "NC1",
+        "MMBuy": None,
+        "MMSell": None,
+        "Price": 170.0,
+        "PriceTimeEpochMs": 1700000000000,
+        "High": 185.0,
+        "AllTimeHigh": 310.0,
+        "Low": 155.0,
+        "AllTimeLow": 45.0,
+        "Ask": 178.0,
+        "AskCount": 6,
+        "Bid": 170.0,
+        "BidCount": 12,
+        "Supply": 4000,
+        "Demand": 10000,
+        "Traded": 400,
+        "VolumeAmount": 68000.0,
+        "PriceAverage": 170.0,
+    },
+]
+
+
+@pytest.fixture
+def mock_fio_exchange_success_transport() -> MockTransport:
+    """Transport that returns successful responses for exchange endpoints."""
+    return create_mock_transport(
+        {
+            "/exchange/RAT.CI1": httpx.Response(200, json=SAMPLE_EXCHANGE_RAT_CI1),
+            "/exchange/BSE.CI1": httpx.Response(200, json=SAMPLE_EXCHANGE_BSE_CI1),
+            "/exchange/all": httpx.Response(200, json=SAMPLE_EXCHANGE_ALL),
+        }
+    )
+
+
+@pytest.fixture
+def mock_fio_exchange_not_found_transport() -> MockTransport:
+    """Transport that returns 204 for exchange not found."""
+    return create_mock_transport(
+        {
+            "/exchange/INVALID.CI1": httpx.Response(204),
+        }
+    )
