@@ -142,9 +142,11 @@ class MaterialsCache:
         """Get the number of materials in the cache.
 
         Returns:
-            Number of cached materials, or 0 if cache is not loaded.
+            Number of cached materials, or 0 if cache is invalid or not loaded.
         """
-        if self._materials is None and self.is_valid():
+        if not self.is_valid():
+            return 0
+        if self._materials is None:
             self._load()
         return len(self._materials) if self._materials else 0
 
@@ -154,6 +156,8 @@ class MaterialsCache:
         Returns:
             List of all material dictionaries, or empty list if cache is invalid.
         """
-        if self._materials is None and self.is_valid():
+        if not self.is_valid():
+            return []
+        if self._materials is None:
             self._load()
         return list(self._materials.values()) if self._materials else []

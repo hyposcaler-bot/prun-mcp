@@ -103,7 +103,9 @@ class RecipesCache:
         Returns:
             List of all recipes, or empty list if cache is invalid.
         """
-        if self._recipes is None and self.is_valid():
+        if not self.is_valid():
+            return []
+        if self._recipes is None:
             self._load()
 
         return self._recipes if self._recipes else []
@@ -151,9 +153,11 @@ class RecipesCache:
         """Get the number of recipes in the cache.
 
         Returns:
-            Number of cached recipes, or 0 if cache is not loaded.
+            Number of cached recipes, or 0 if cache is invalid or not loaded.
         """
-        if self._recipes is None and self.is_valid():
+        if not self.is_valid():
+            return 0
+        if self._recipes is None:
             self._load()
         return len(self._recipes) if self._recipes else 0
 
@@ -176,7 +180,9 @@ class RecipesCache:
             List of matching recipes with BuildingTicker, RecipeName,
             Inputs, Outputs, and TimeMs. Returns empty list if cache is invalid.
         """
-        if self._recipes is None and self.is_valid():
+        if not self.is_valid():
+            return []
+        if self._recipes is None:
             self._load()
 
         if not self._recipes:

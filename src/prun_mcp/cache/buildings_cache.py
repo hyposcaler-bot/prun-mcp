@@ -146,9 +146,11 @@ class BuildingsCache:
         """Get the number of buildings in the cache.
 
         Returns:
-            Number of cached buildings, or 0 if cache is not loaded.
+            Number of cached buildings, or 0 if cache is invalid or not loaded.
         """
-        if self._buildings is None and self.is_valid():
+        if not self.is_valid():
+            return 0
+        if self._buildings is None:
             self._load()
         return len(self._buildings) if self._buildings else 0
 
@@ -171,7 +173,9 @@ class BuildingsCache:
             List of matching buildings with Ticker and Name only.
             Use get_building() for full details. Returns empty list if cache is invalid.
         """
-        if self._buildings is None and self.is_valid():
+        if not self.is_valid():
+            return []
+        if self._buildings is None:
             self._load()
 
         if not self._buildings:
