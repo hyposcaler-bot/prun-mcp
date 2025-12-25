@@ -94,6 +94,8 @@ Or with Docker:
 | Materials | `get_material_info`, `refresh_materials_cache`, `get_all_materials` | [docs/tools/materials.md](docs/tools/materials.md) |
 | Buildings | `get_building_info`, `refresh_buildings_cache`, `search_buildings` | [docs/tools/buildings.md](docs/tools/buildings.md) |
 | Planets | `get_planet_info` | [docs/tools/planets.md](docs/tools/planets.md) |
+| Recipes | `get_recipe_info`, `search_recipes`, `refresh_recipes_cache` | [docs/tools/recipes.md](docs/tools/recipes.md) |
+| Exchange | `get_exchange_prices`, `get_exchange_all` | [docs/tools/exchange.md](docs/tools/exchange.md) |
 
 ## Development
 
@@ -126,12 +128,15 @@ src/prun_mcp/
 ├── cache/
 │   ├── __init__.py
 │   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
-│   └── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
+│   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
+│   └── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
 └── tools/
     ├── __init__.py
     ├── materials.py    # Material-related tools
     ├── buildings.py    # Building-related tools
-    └── planets.py      # Planet-related tools (no cache)
+    ├── planets.py      # Planet-related tools (no cache)
+    ├── recipes.py      # Recipe-related tools
+    └── exchange.py     # Exchange/pricing tools (no cache)
 ```
 
 ## License
