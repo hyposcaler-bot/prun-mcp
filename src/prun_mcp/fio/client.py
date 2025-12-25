@@ -229,3 +229,15 @@ class FIOClient:
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching all exchange data")
             raise FIOApiError(f"HTTP error: {e}") from e
+
+
+# Singleton instance
+_fio_client: FIOClient | None = None
+
+
+def get_fio_client() -> FIOClient:
+    """Get or create the shared FIO client singleton."""
+    global _fio_client
+    if _fio_client is None:
+        _fio_client = FIOClient()
+    return _fio_client

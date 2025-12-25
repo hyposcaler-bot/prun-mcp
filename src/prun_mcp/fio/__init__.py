@@ -1,6 +1,6 @@
 """FIO API client for Prosperous Universe."""
 
-from prun_mcp.fio.client import FIOClient
+from prun_mcp.fio.client import FIOClient, get_fio_client
 from prun_mcp.fio.exceptions import FIOApiError, FIONotFoundError
 
-__all__ = ["FIOClient", "FIOApiError", "FIONotFoundError"]
+__all__ = ["FIOClient", "FIOApiError", "FIONotFoundError", "get_fio_client"]

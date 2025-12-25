@@ -8,21 +8,12 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.cache import MaterialsCache
-from prun_mcp.fio import FIOApiError, FIOClient
+from prun_mcp.fio import FIOApiError, get_fio_client
 
 logger = logging.getLogger(__name__)
 
-# Shared instances
-_fio_client: FIOClient | None = None
+# Shared materials cache instance
 _materials_cache: MaterialsCache | None = None
-
-
-def get_fio_client() -> FIOClient:
-    """Get or create the shared FIO client."""
-    global _fio_client
-    if _fio_client is None:
-        _fio_client = FIOClient()
-    return _fio_client
 
 
 def get_materials_cache() -> MaterialsCache:

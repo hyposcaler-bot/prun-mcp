@@ -8,8 +8,7 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.fio import FIOApiError, FIONotFoundError
-from prun_mcp.tools.materials import get_fio_client
+from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 
 logger = logging.getLogger(__name__)
 

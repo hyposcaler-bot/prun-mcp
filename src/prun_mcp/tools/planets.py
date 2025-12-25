@@ -7,20 +7,9 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.fio import FIOApiError, FIOClient, FIONotFoundError
+from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 
 logger = logging.getLogger(__name__)
-
-# Shared instance
-_fio_client: FIOClient | None = None
-
-
-def get_fio_client() -> FIOClient:
-    """Get or create the shared FIO client."""
-    global _fio_client
-    if _fio_client is None:
-        _fio_client = FIOClient()
-    return _fio_client
 
 
 @mcp.tool()

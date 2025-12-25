@@ -268,6 +268,27 @@ class TestSearchRecipes:
         assert isinstance(result[0], TextContent)
         assert "FIO API error" in result[0].text
 
+    async def test_invalid_building_returns_error(self, tmp_path: Path) -> None:
+        """Test that invalid building ticker returns error."""
+        from prun_mcp.cache import BuildingsCache
+
+        from tests.conftest import SAMPLE_BUILDINGS
+
+        # Set up buildings cache with sample data
+        buildings_cache = BuildingsCache(cache_dir=tmp_path)
+        buildings_cache.refresh(SAMPLE_BUILDINGS)
+
+        with patch(
+            "prun_mcp.tools.buildings.get_buildings_cache", return_value=buildings_cache
+        ):
+            result = await search_recipes(building="INVALID")
+
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert isinstance(result[0], TextContent)
+        assert "unknown building ticker" in result[0].text.lower()
+        assert "INVALID" in result[0].text
+
 
 class TestRefreshRecipesCache:
     """Tests for refresh_recipes_cache tool."""

@@ -8,8 +8,7 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.cache import RecipesCache
-from prun_mcp.fio import FIOApiError
-from prun_mcp.tools.materials import get_fio_client
+from prun_mcp.fio import FIOApiError, get_fio_client
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +100,25 @@ async def search_recipes(
         TOON-encoded list of matching recipes.
     """
     try:
+        # Validate building ticker if provided
+        if building:
+            from prun_mcp.tools.buildings import get_buildings_cache
+
+            buildings_cache = get_buildings_cache()
+            if not buildings_cache.is_valid():
+                client = get_fio_client()
+                buildings_data = await client.get_all_buildings()
+                buildings_cache.refresh(buildings_data)
+
+            building_upper = building.upper()
+            if not buildings_cache.get_building(building_upper):
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Unknown building ticker: {building_upper}",
+                    )
+                ]
+
         await _ensure_recipes_cache_populated()
         cache = get_recipes_cache()
         recipes = cache.search_recipes(
