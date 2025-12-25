@@ -32,7 +32,6 @@ class MaterialsCache:
         self.ttl_hours = ttl_hours
         self._materials: dict[str, dict[str, Any]] | None = None
         self._materials_by_id: dict[str, dict[str, Any]] | None = None
-        self._loaded_at: datetime | None = None
 
     def is_valid(self) -> bool:
         """Check if the cache file exists and is within TTL.
@@ -52,7 +51,6 @@ class MaterialsCache:
         if not self.cache_file.exists():
             self._materials = None
             self._materials_by_id = None
-            self._loaded_at = None
             return
 
         self._materials = {}
@@ -67,7 +65,6 @@ class MaterialsCache:
                 if material_id:
                     self._materials_by_id[material_id.lower()] = material
 
-        self._loaded_at = datetime.now()
         logger.info("Loaded %d materials from cache", len(self._materials))
 
     def get_material(self, identifier: str) -> dict[str, Any] | None:
@@ -125,7 +122,6 @@ class MaterialsCache:
             if material_id:
                 self._materials_by_id[material_id.lower()] = material
 
-        self._loaded_at = datetime.now()
         logger.info("Refreshed cache with %d materials", len(self._materials))
 
     def invalidate(self) -> None:
@@ -136,7 +132,6 @@ class MaterialsCache:
 
         self._materials = None
         self._materials_by_id = None
-        self._loaded_at = None
 
     def material_count(self) -> int:
         """Get the number of materials in the cache.

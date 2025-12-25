@@ -36,7 +36,6 @@ class RecipesCache:
         self.ttl_hours = ttl_hours
         self._recipes: list[dict[str, Any]] | None = None
         self._recipes_by_output: dict[str, list[dict[str, Any]]] | None = None
-        self._loaded_at: datetime | None = None
 
     def is_valid(self) -> bool:
         """Check if the cache file exists and is within TTL.
@@ -56,7 +55,6 @@ class RecipesCache:
         if not self.cache_file.exists():
             self._recipes = None
             self._recipes_by_output = None
-            self._loaded_at = None
             return
 
         with open(self.cache_file, encoding="utf-8") as f:
@@ -74,7 +72,6 @@ class RecipesCache:
                         self._recipes_by_output[ticker] = []
                     self._recipes_by_output[ticker].append(recipe)
 
-        self._loaded_at = datetime.now()
         logger.info("Loaded %d recipes from cache", len(recipes))
 
     def get_recipes_by_output(self, ticker: str) -> list[dict[str, Any]]:
@@ -136,7 +133,6 @@ class RecipesCache:
                         self._recipes_by_output[ticker] = []
                     self._recipes_by_output[ticker].append(recipe)
 
-        self._loaded_at = datetime.now()
         logger.info("Refreshed cache with %d recipes", len(self._recipes))
 
     def invalidate(self) -> None:
@@ -147,7 +143,6 @@ class RecipesCache:
 
         self._recipes = None
         self._recipes_by_output = None
-        self._loaded_at = None
 
     def recipe_count(self) -> int:
         """Get the number of recipes in the cache.

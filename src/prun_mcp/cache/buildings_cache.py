@@ -36,7 +36,6 @@ class BuildingsCache:
         self.ttl_hours = ttl_hours
         self._buildings: dict[str, dict[str, Any]] | None = None
         self._buildings_by_id: dict[str, dict[str, Any]] | None = None
-        self._loaded_at: datetime | None = None
 
     def is_valid(self) -> bool:
         """Check if the cache file exists and is within TTL.
@@ -56,7 +55,6 @@ class BuildingsCache:
         if not self.cache_file.exists():
             self._buildings = None
             self._buildings_by_id = None
-            self._loaded_at = None
             return
 
         self._buildings = {}
@@ -71,7 +69,6 @@ class BuildingsCache:
                 if building_id:
                     self._buildings_by_id[building_id.lower()] = building
 
-        self._loaded_at = datetime.now()
         logger.info("Loaded %d buildings from cache", len(self._buildings))
 
     def get_building(self, identifier: str) -> dict[str, Any] | None:
@@ -129,7 +126,6 @@ class BuildingsCache:
             if building_id:
                 self._buildings_by_id[building_id.lower()] = building
 
-        self._loaded_at = datetime.now()
         logger.info("Refreshed cache with %d buildings", len(self._buildings))
 
     def invalidate(self) -> None:
@@ -140,7 +136,6 @@ class BuildingsCache:
 
         self._buildings = None
         self._buildings_by_id = None
-        self._loaded_at = None
 
     def building_count(self) -> int:
         """Get the number of buildings in the cache.
