@@ -35,5 +35,5 @@ cache/
 docs/
 tests/
 CLAUDE.md
-prun-mcp-spec.md
+DESIGN.md
 .claude/
