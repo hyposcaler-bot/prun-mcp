@@ -21,7 +21,7 @@ uv sync
 
 ### Note on toon-format
 
-This project uses [toon-format](https://github.com/toon-format/toon-python) for TOON serialization (30-60% token reduction vs JSON). The library is installed directly from GitHub because the PyPI version (v0.1.0) has an unimplemented encoder. This is configured in `pyproject.toml` via `[tool.uv.sources]`.
+This project uses [toon-python](https://github.com/toon-format/toon-python) for TOON serialization (30-60% token reduction vs JSON). The library is installed directly from GitHub because the PyPI version (v0.1.0) has an unimplemented encoder. This is configured in `pyproject.toml` via `[tool.uv.sources]`.
 
 ## Usage
 

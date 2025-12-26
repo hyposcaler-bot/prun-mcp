@@ -16,7 +16,7 @@ This document contains critical information about working with this codebase. Fo
    - Public APIs must have docstrings
    - Functions must be focused and small
    - Follow existing patterns exactly
-   - Line length: 120 chars maximum
+   - Line length: 88 chars maximum
 
 3. Testing Requirements
    - Framework: `uv run --frozen pytest`
