@@ -96,6 +96,7 @@ Or with Docker:
 | Planets | `get_planet_info` | [docs/tools/planets.md](docs/tools/planets.md) |
 | Recipes | `get_recipe_info`, `search_recipes`, `refresh_recipes_cache` | [docs/tools/recipes.md](docs/tools/recipes.md) |
 | Exchange | `get_exchange_prices`, `get_exchange_all` | [docs/tools/exchange.md](docs/tools/exchange.md) |
+| COGM | `calculate_cogm` | [docs/tools/cogm.md](docs/tools/cogm.md) |
 
 ## Configuration
 
@@ -135,14 +136,16 @@ src/prun_mcp/
 │   ├── __init__.py
 │   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
 │   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
-│   └── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
+│   ├── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
+│   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
 └── tools/
     ├── __init__.py
     ├── materials.py    # Material-related tools
     ├── buildings.py    # Building-related tools
     ├── planets.py      # Planet-related tools (no cache)
     ├── recipes.py      # Recipe-related tools
-    └── exchange.py     # Exchange/pricing tools (no cache)
+    ├── exchange.py     # Exchange/pricing tools (no cache)
+    └── cogm.py         # COGM calculation tool
 ```
 
 ## License
