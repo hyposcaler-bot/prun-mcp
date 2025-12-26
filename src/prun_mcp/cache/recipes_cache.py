@@ -36,6 +36,7 @@ class RecipesCache:
         self.ttl_hours = ttl_hours
         self._recipes: list[dict[str, Any]] | None = None
         self._recipes_by_output: dict[str, list[dict[str, Any]]] | None = None
+        self._recipes_by_name: dict[str, dict[str, Any]] | None = None
 
     def is_valid(self) -> bool:
         """Check if the cache file exists and is within TTL.
@@ -55,6 +56,7 @@ class RecipesCache:
         if not self.cache_file.exists():
             self._recipes = None
             self._recipes_by_output = None
+            self._recipes_by_name = None
             return
 
         with open(self.cache_file, encoding="utf-8") as f:
@@ -71,6 +73,13 @@ class RecipesCache:
                     if ticker not in self._recipes_by_output:
                         self._recipes_by_output[ticker] = []
                     self._recipes_by_output[ticker].append(recipe)
+
+        # Build index by recipe name
+        self._recipes_by_name = {}
+        for recipe in recipes:
+            name = recipe.get("RecipeName", "")
+            if name:
+                self._recipes_by_name[name] = recipe
 
         logger.info("Loaded %d recipes from cache", len(recipes))
 
@@ -93,6 +102,26 @@ class RecipesCache:
             return []
 
         return self._recipes_by_output.get(ticker.upper(), [])
+
+    def get_recipe_by_name(self, name: str) -> dict[str, Any] | None:
+        """Get a recipe by its RecipeName.
+
+        Args:
+            name: Recipe name (e.g., "1xGRN 1xBEA 1xNUT=>10xRAT").
+
+        Returns:
+            Recipe dictionary or None if not found.
+        """
+        if self._recipes is None or not self.is_valid():
+            if self.is_valid():
+                self._load()
+            else:
+                return None
+
+        if not self._recipes_by_name:
+            return None
+
+        return self._recipes_by_name.get(name)
 
     def get_all_recipes(self) -> list[dict[str, Any]]:
         """Get all recipes from the cache.
@@ -133,6 +162,13 @@ class RecipesCache:
                         self._recipes_by_output[ticker] = []
                     self._recipes_by_output[ticker].append(recipe)
 
+        # Build index by recipe name
+        self._recipes_by_name = {}
+        for recipe in recipes:
+            name = recipe.get("RecipeName", "")
+            if name:
+                self._recipes_by_name[name] = recipe
+
         logger.info("Refreshed cache with %d recipes", len(self._recipes))
 
     def invalidate(self) -> None:
@@ -143,6 +179,7 @@ class RecipesCache:
 
         self._recipes = None
         self._recipes_by_output = None
+        self._recipes_by_name = None
 
     def recipe_count(self) -> int:
         """Get the number of recipes in the cache.

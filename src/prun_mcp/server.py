@@ -17,6 +17,7 @@ logging.basicConfig(
 from prun_mcp.app import mcp  # noqa: E402
 from prun_mcp.fio import get_fio_client  # noqa: E402
 from prun_mcp.tools import buildings  # noqa: F401, E402
+from prun_mcp.tools import cogm  # noqa: F401, E402
 from prun_mcp.tools import exchange  # noqa: F401, E402
 from prun_mcp.tools import materials  # noqa: F401, E402
 from prun_mcp.tools import planets  # noqa: F401, E402
@@ -49,7 +50,9 @@ async def _run_server(
         try:
             await _shutdown()
         except Exception:
-            logger.debug("Failed to close the FIO client during shutdown", exc_info=True)
+            logger.debug(
+                "Failed to close the FIO client during shutdown", exc_info=True
+            )
 
 
 def main() -> None:

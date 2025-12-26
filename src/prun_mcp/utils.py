@@ -52,7 +52,9 @@ def prettify_names(data: Any) -> Any:
     """
     if isinstance(data, dict):
         return {
-            k: camel_to_title(v) if k in NAME_FIELDS and isinstance(v, str) else prettify_names(v)
+            k: camel_to_title(v)
+            if k in NAME_FIELDS and isinstance(v, str)
+            else prettify_names(v)
             for k, v in data.items()
         }
     elif isinstance(data, list):

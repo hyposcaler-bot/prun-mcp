@@ -251,6 +251,33 @@ class FIOClient:
             logger.exception("HTTP error while fetching all exchange data")
             raise FIOApiError(f"HTTP error: {e}") from e
 
+    async def get_workforce_needs(self) -> list[dict[str, Any]]:
+        """Fetch workforce consumption rates for all workforce types.
+
+        Returns:
+            List of workforce needs dictionaries, each containing workforce type
+            and list of required materials with consumption amounts per 100 workers/day.
+
+        Raises:
+            FIOApiError: If the API returns an error.
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get("/global/workforceneeds")
+
+            if response.status_code != 200:
+                _log_api_error(response, "get_workforce_needs")
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching workforce needs")
+            raise FIOApiError(f"HTTP error: {e}") from e
+
 
 # Singleton instance
 _fio_client: FIOClient | None = None

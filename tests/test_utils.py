@@ -24,7 +24,10 @@ class TestCamelToTitle:
     def test_many_words(self) -> None:
         """Test multi-word camelCase conversion."""
         assert camel_to_title("pioneerLuxuryDrink") == "Pioneer Luxury Drink"
-        assert camel_to_title("advancedThermalProtectionMaterial") == "Advanced Thermal Protection Material"
+        assert (
+            camel_to_title("advancedThermalProtectionMaterial")
+            == "Advanced Thermal Protection Material"
+        )
 
     def test_empty_string(self) -> None:
         """Test empty string."""
