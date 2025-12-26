@@ -23,7 +23,7 @@ Details on the TOON spec as well as the API used by the [toon-format/toon-python
 
 ### MCP python-SDK
 
-The following readme [https://github.com/modelcontextprotocol/python-sdk/blob/main/README.md](https://github.com/modelcontextprotocol/python-sdk/blob/main/README.md)
+The following readme [https://github.com/modelcontextprotocol/python-sdk/blob/main/README.md](https://github.com/modelcontextprotocol/python-sdk/blob/main/README.md) 
 
 ### Tool Types
 
@@ -96,7 +96,7 @@ async def get_exchange_prices(ticker: str, exchange: str) -> str | list[TextCont
 | Materials | Yes | Static, rarely changes | 24h or manual |
 | Buildings | Yes | Static, rarely changes | 24h or manual |
 | Recipes | Yes | Static, rarely changes | 24h or manual |
-| Exchange prices | No | Real-time data, FIO handles caching | - |
+| Exchange prices | No | Real-time data, rely on upstream doing the right thing for them | - |
 | Order books | No | Real-time data | - |
 | Planet data | No | FIO handles caching, fetched on-demand | - |
 
