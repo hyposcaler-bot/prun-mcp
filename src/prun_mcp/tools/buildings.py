@@ -9,6 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import BuildingsCache
 from prun_mcp.fio import FIOApiError, get_fio_client
+from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(result)
+        return toon_encode(prettify_names(result))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")
@@ -170,7 +171,7 @@ async def search_buildings(
             expertise=expertise,
             workforce=workforce,
         )
-        return toon_encode({"buildings": buildings})
+        return toon_encode(prettify_names({"buildings": buildings}))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")

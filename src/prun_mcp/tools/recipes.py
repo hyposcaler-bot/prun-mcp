@@ -9,6 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import RecipesCache
 from prun_mcp.fio import FIOApiError, get_fio_client
+from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(result)
+        return toon_encode(prettify_names(result))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")
@@ -126,7 +127,7 @@ async def search_recipes(
             input_tickers=input_tickers,
             output_tickers=output_tickers,
         )
-        return toon_encode({"recipes": recipes})
+        return toon_encode(prettify_names({"recipes": recipes}))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")

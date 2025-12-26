@@ -9,6 +9,7 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
+from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ async def get_exchange_prices(ticker: str, exchange: str) -> str | list[TextCont
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(result)
+        return toon_encode(prettify_names(result))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching exchange prices")
@@ -126,7 +127,7 @@ async def get_exchange_all(exchange: str) -> str | list[TextContent]:
         exchange_set = set(exchanges)
         prices = [item for item in all_data if item.get("ExchangeCode") in exchange_set]
 
-        return toon_encode({"prices": prices})
+        return toon_encode(prettify_names({"prices": prices}))
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching exchange data")

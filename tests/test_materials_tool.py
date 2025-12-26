@@ -49,7 +49,7 @@ class TestGetMaterialInfo:
 
         material = materials[0]
         assert material["Ticker"] == "BSE"
-        assert material["Name"] == "basicStructuralElements"
+        assert material["Name"] == "Basic Structural Elements"  # prettified
 
     async def test_lowercase_ticker_converted(self, tmp_path: Path) -> None:
         """Test that lowercase tickers are converted to uppercase."""

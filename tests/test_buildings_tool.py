@@ -49,7 +49,7 @@ class TestGetBuildingInfo:
 
         building = buildings[0]
         assert building["Ticker"] == "PP1"
-        assert building["Name"] == "prefabPlant1"
+        assert building["Name"] == "Prefab Plant1"  # prettified
         assert building["AreaCost"] == 19
         assert building["Expertise"] == "CONSTRUCTION"
 
