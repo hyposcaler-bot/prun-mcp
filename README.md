@@ -11,13 +11,18 @@ This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) serve
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# Clone the repository
-git clone <repo-url>
+# Clone the repository (includes submodules)
+git clone --recurse-submodules <repo-url>
 cd prun-mcp
+
+# Or if already cloned without submodules:
+git submodule update --init
 
 # Install dependencies
 uv sync
 ```
+
+> **Note:** This MCP Server uses content from [fnar/prun-community-derived-mechanics](https://gitlab.com/fnar/prun-community-derived-mechanics) as a git submodule for game mechanics formulas.
 
 ### Note on toon-format
 
@@ -113,6 +118,14 @@ Or with Docker:
 | `buildings://efficiency/experts` | Expert bonus system (up to ~28.4%) |
 | `buildings://efficiency/cogc` | CoGC ADVERTISING program bonuses (up to 25%) |
 | `buildings://efficiency/condition` | Building condition and maintenance |
+| `pct-mechanics://list` | List of available game mechanics topics |
+| `pct-mechanics://arc` | ARC level formula |
+| `pct-mechanics://building-degradation` | Building condition and repair cost formulas |
+| `pct-mechanics://hq` | HQ upgrade costs and efficiency formula |
+| `pct-mechanics://planet` | Planet resource extraction formulas |
+| `pct-mechanics://population-infrastructure` | Population needs, happiness, and growth |
+| `pct-mechanics://ship-blueprints` | Ship construction formulas and component volumes |
+| `pct-mechanics://workforce` | Workforce efficiency formulas |
 
 ## Configuration
 
@@ -140,41 +153,45 @@ uv run pyright
 ## Project Structure
 
 ```
-src/prun_mcp/
-├── __init__.py
-├── app.py              # FastMCP instance
-├── server.py           # Entry point
-├── fio/
+prun-mcp/
+├── data/
+│   └── community-mechanics/  # Git submodule: FNAR community-derived game mechanics
+├── src/prun_mcp/
 │   ├── __init__.py
-│   ├── client.py       # HTTP client for FIO API
-│   └── exceptions.py   # Custom exceptions
-├── cache/
-│   ├── __init__.py
-│   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
-│   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
-│   ├── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
-│   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
-├── storage/
-│   ├── __init__.py
-│   ├── base_plan_storage.py  # Base plan persistent storage
-│   └── validation.py         # Plan validation rules
-├── resources/
-│   ├── __init__.py
-│   ├── buildings.py    # Building efficiency documentation
-│   ├── exchanges.py    # Exchange data resource
-│   ├── extraction.py   # Extraction building constants (EXT, RIG, COL)
-│   └── workforce.py    # Workforce types and habitation resource
-└── tools/
-    ├── __init__.py
-    ├── materials.py        # Material-related tools
-    ├── buildings.py        # Building-related tools
-    ├── planets.py          # Planet-related tools (no cache)
-    ├── recipes.py          # Recipe-related tools
-    ├── exchange.py         # Exchange/pricing tools (no cache)
-    ├── market_analysis.py  # Market analysis tools (no cache)
-    ├── cogm.py             # COGM calculation tool
-    ├── permit_io.py        # Permit I/O calculation tool
-    └── base_plans.py       # Base plan management tools
+│   ├── app.py              # FastMCP instance
+│   ├── server.py           # Entry point
+│   ├── fio/
+│   │   ├── __init__.py
+│   │   ├── client.py       # HTTP client for FIO API
+│   │   └── exceptions.py   # Custom exceptions
+│   ├── cache/
+│   │   ├── __init__.py
+│   │   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
+│   │   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
+│   │   ├── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
+│   │   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
+│   ├── storage/
+│   │   ├── __init__.py
+│   │   ├── base_plan_storage.py  # Base plan persistent storage
+│   │   └── validation.py         # Plan validation rules
+│   ├── resources/
+│   │   ├── __init__.py
+│   │   ├── buildings.py    # Building efficiency documentation
+│   │   ├── exchanges.py    # Exchange data resource
+│   │   ├── extraction.py   # Extraction building constants (EXT, RIG, COL)
+│   │   ├── mechanics.py    # Community mechanics resources
+│   │   └── workforce.py    # Workforce types and habitation resource
+│   └── tools/
+│       ├── __init__.py
+│       ├── materials.py        # Material-related tools
+│       ├── buildings.py        # Building-related tools
+│       ├── planets.py          # Planet-related tools (no cache)
+│       ├── recipes.py          # Recipe-related tools
+│       ├── exchange.py         # Exchange/pricing tools (no cache)
+│       ├── market_analysis.py  # Market analysis tools (no cache)
+│       ├── cogm.py             # COGM calculation tool
+│       ├── permit_io.py        # Permit I/O calculation tool
+│       └── base_plans.py       # Base plan management tools
 ```
 
 ## License

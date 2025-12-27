@@ -1,0 +1,3 @@
+[submodule "data/community-mechanics"]
+	path = data/community-mechanics
+	url = https://gitlab.com/fnar/prun-community-derived-mechanics.git
