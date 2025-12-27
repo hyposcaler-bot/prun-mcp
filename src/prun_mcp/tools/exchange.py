@@ -8,12 +8,11 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
+from prun_mcp.resources.exchanges import VALID_EXCHANGES
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
-
-VALID_EXCHANGES = {"AI1", "CI1", "CI2", "IC1", "NC1", "NC2"}
 
 
 @mcp.tool()
@@ -26,6 +25,7 @@ async def get_exchange_prices(ticker: str, exchange: str) -> str | list[TextCont
         exchange: Exchange code(s). Can be single (e.g., "CI1")
                   or comma-separated (e.g., "CI1,NC1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
+                  See exchange://list resource for code-to-name mapping.
 
     Returns:
         TOON-encoded price data including full order book (BuyingOrders,
@@ -41,7 +41,10 @@ async def get_exchange_prices(ticker: str, exchange: str) -> str | list[TextCont
         return [
             TextContent(
                 type="text",
-                text=f"Invalid exchange(s): {', '.join(invalid_exchanges)}. Valid: {valid_list}",
+                text=(
+                    f"Invalid exchange(s): {', '.join(invalid_exchanges)}. "
+                    f"Valid: {valid_list}"
+                ),
             )
         ]
 
@@ -100,6 +103,7 @@ async def get_exchange_all(exchange: str) -> str | list[TextContent]:
         exchange: Exchange code(s). Can be single (e.g., "CI1")
                   or comma-separated (e.g., "CI1,NC1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
+                  See exchange://list resource for code-to-name mapping.
 
     Returns:
         TOON-encoded list of all material prices on the exchange(s).
@@ -115,7 +119,10 @@ async def get_exchange_all(exchange: str) -> str | list[TextContent]:
         return [
             TextContent(
                 type="text",
-                text=f"Invalid exchange(s): {', '.join(invalid_exchanges)}. Valid: {valid_list}",
+                text=(
+                    f"Invalid exchange(s): {', '.join(invalid_exchanges)}. "
+                    f"Valid: {valid_list}"
+                ),
             )
         ]
 

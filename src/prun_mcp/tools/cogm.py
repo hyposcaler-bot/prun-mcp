@@ -9,12 +9,11 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.cache import BuildingsCache, RecipesCache, WorkforceCache
+from prun_mcp.resources.exchanges import VALID_EXCHANGES
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
-
-VALID_EXCHANGES = {"AI1", "CI1", "CI2", "IC1", "NC1", "NC2"}
 WORKFORCE_TYPES = ["Pioneers", "Settlers", "Technicians", "Engineers", "Scientists"]
 MS_PER_DAY = 24 * 60 * 60 * 1000  # Milliseconds per day
 
@@ -114,7 +113,9 @@ async def calculate_cogm(
     Args:
         recipe: Recipe name (e.g., "1xGRN 1xBEA 1xNUT=>10xRAT")
                 Use get_recipe_info or search_recipes to find valid recipe names.
-        exchange: Exchange code for pricing (e.g., "CI1")
+        exchange: Exchange code for pricing (e.g., "CI1").
+                  Valid: AI1, CI1, CI2, IC1, NC1, NC2.
+                  See exchange://list resource for code-to-name mapping.
         building_count: Number of buildings (default: 1)
         efficiency: Production efficiency multiplier (default: 1.0 = 100%)
         self_consume: If True, use produced output to satisfy workforce needs
