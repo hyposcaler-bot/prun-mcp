@@ -10,11 +10,12 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import BuildingsCache, RecipesCache, WorkforceCache
 from prun_mcp.resources.exchanges import VALID_EXCHANGES
-from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
-from prun_mcp.utils import prettify_names
+from prun_mcp.resources.workforce import WORKFORCE_TYPES
+from prun_mcp.fio import FIOApiError, get_fio_client
+from prun_mcp.utils import fetch_prices, prettify_names
 
 logger = logging.getLogger(__name__)
-WORKFORCE_TYPES = ["Pioneers", "Settlers", "Technicians", "Engineers", "Scientists"]
+
 MS_PER_DAY = 24 * 60 * 60 * 1000  # Milliseconds per day
 
 # Shared instances
@@ -74,27 +75,6 @@ async def _ensure_caches_populated() -> None:
                 recipes_cache.refresh(results[i])
             elif cache_type == "workforce":
                 workforce_cache.refresh(results[i])
-
-
-async def _fetch_prices(tickers: list[str], exchange: str) -> dict[str, float | None]:
-    """Fetch prices for multiple tickers from an exchange.
-
-    Returns:
-        Dict mapping ticker to price (or None if not found).
-    """
-    client = get_fio_client()
-
-    async def fetch_one(ticker: str) -> tuple[str, float | None]:
-        try:
-            data = await client.get_exchange_info(ticker, exchange)
-            # Use Ask price (what you'd pay to buy), fall back to Price
-            price = data.get("Ask") or data.get("Price")
-            return (ticker, price)
-        except FIONotFoundError:
-            return (ticker, None)
-
-    results = await asyncio.gather(*[fetch_one(t) for t in tickers])
-    return dict(results)
 
 
 @mcp.tool()
@@ -241,7 +221,7 @@ async def calculate_cogm(
 
         # Fetch all prices in parallel
         all_tickers = list(set(input_tickers) | consumable_tickers)
-        prices = await _fetch_prices(all_tickers, exchange)
+        prices = await fetch_prices(all_tickers, exchange)
 
         # Calculate daily input costs
         input_breakdown: list[dict[str, Any]] = []
@@ -252,7 +232,7 @@ async def calculate_cogm(
             ticker = inp.get("Ticker", "")
             amount = inp.get("Amount", 0)
             daily_amount = runs_per_day * amount
-            price = prices.get(ticker)
+            price = prices.get(ticker, {"ask": None})["ask"]
 
             if price is None:
                 missing_prices.append(ticker)
@@ -315,7 +295,7 @@ async def calculate_cogm(
                         }
                     )
                 else:
-                    price = prices.get(ticker)
+                    price = prices.get(ticker, {"ask": None})["ask"]
                     if price is None:
                         if ticker not in missing_prices:
                             missing_prices.append(ticker)

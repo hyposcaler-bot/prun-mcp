@@ -112,8 +112,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -123,7 +123,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -161,8 +161,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -172,7 +172,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -198,8 +198,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -209,7 +209,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -325,15 +325,16 @@ class TestCalculateCogm:
         # Only return some prices
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {
-                "GRN": 45.0,
-                "BEA": None,  # Missing price
-                "NUT": 60.0,
-                "RAT": 175.0,
-                "DW": None,  # Missing price
-                "OVE": 250.0,
+        ) -> dict[str, dict[str, float | None]]:
+            prices_data: dict[str, dict[str, float | None]] = {
+                "GRN": {"ask": 45.0, "bid": 45.0},
+                "BEA": {"ask": None, "bid": None},  # Missing price
+                "NUT": {"ask": 60.0, "bid": 60.0},
+                "RAT": {"ask": 175.0, "bid": 175.0},
+                "DW": {"ask": None, "bid": None},  # Missing price
+                "OVE": {"ask": 250.0, "bid": 250.0},
             }
+            return {t: prices_data.get(t, {"ask": None, "bid": None}) for t in tickers}
 
         with (
             patch(
@@ -343,7 +344,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -368,8 +369,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -379,7 +380,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -429,8 +430,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -440,7 +441,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             # Without self-consume
             result_normal = await calculate_cogm(
@@ -479,8 +480,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -490,7 +491,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -525,8 +526,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -536,7 +537,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -562,8 +563,8 @@ class TestCalculateCogm:
 
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
-        ) -> dict[str, float | None]:
-            return {t: prices.get(t) for t in tickers}
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
         with (
             patch(
@@ -573,7 +574,7 @@ class TestCalculateCogm:
             patch(
                 "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
             ),
-            patch("prun_mcp.tools.cogm._fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",

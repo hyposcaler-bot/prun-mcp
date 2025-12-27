@@ -1,7 +1,10 @@
 """Utility functions for prun-mcp."""
 
+import asyncio
 import re
 from typing import Any
+
+from prun_mcp.fio import FIONotFoundError, get_fio_client
 
 # Fields containing camelCase names that should be prettified
 NAME_FIELDS = {"Name", "CategoryName", "MaterialName", "CommodityName"}
@@ -60,3 +63,29 @@ def prettify_names(data: Any) -> Any:
     elif isinstance(data, list):
         return [prettify_names(item) for item in data]
     return data
+
+
+async def fetch_prices(
+    tickers: list[str], exchange: str
+) -> dict[str, dict[str, float | None]]:
+    """Fetch Ask and Bid prices for multiple tickers from an exchange.
+
+    Args:
+        tickers: List of material ticker symbols.
+        exchange: Exchange code (e.g., "CI1").
+
+    Returns:
+        Dict mapping ticker to {"ask": price, "bid": price}.
+        Prices are None if the material is not traded on the exchange.
+    """
+    client = get_fio_client()
+
+    async def fetch_one(ticker: str) -> tuple[str, dict[str, float | None]]:
+        try:
+            data = await client.get_exchange_info(ticker, exchange)
+            return (ticker, {"ask": data.get("Ask"), "bid": data.get("Bid")})
+        except FIONotFoundError:
+            return (ticker, {"ask": None, "bid": None})
+
+    results = await asyncio.gather(*[fetch_one(t) for t in tickers])
+    return dict(results)

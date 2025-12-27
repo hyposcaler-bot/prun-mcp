@@ -97,6 +97,15 @@ Or with Docker:
 | Recipes | `get_recipe_info`, `search_recipes`, `refresh_recipes_cache` | [docs/tools/recipes.md](docs/tools/recipes.md) |
 | Exchange | `get_exchange_prices`, `get_exchange_all` | [docs/tools/exchange.md](docs/tools/exchange.md) |
 | COGM | `calculate_cogm` | [docs/tools/cogm.md](docs/tools/cogm.md) |
+| Permit I/O | `calculate_permit_io` | [docs/tools/permit_io.md](docs/tools/permit_io.md) |
+
+## Available Resources
+
+| URI | Description |
+|-----|-------------|
+| `exchange://list` | List all commodity exchanges with codes and names |
+| `workforce://types` | List workforce types in tier order (Pioneers → Scientists) |
+| `workforce://habitation` | List habitation buildings with workforce capacities |
 
 ## Configuration
 
@@ -138,6 +147,10 @@ src/prun_mcp/
 │   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
 │   ├── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
 │   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
+├── resources/
+│   ├── __init__.py
+│   ├── exchanges.py    # Exchange data resource
+│   └── workforce.py    # Workforce types and habitation resource
 └── tools/
     ├── __init__.py
     ├── materials.py    # Material-related tools
@@ -145,7 +158,8 @@ src/prun_mcp/
     ├── planets.py      # Planet-related tools (no cache)
     ├── recipes.py      # Recipe-related tools
     ├── exchange.py     # Exchange/pricing tools (no cache)
-    └── cogm.py         # COGM calculation tool
+    ├── cogm.py         # COGM calculation tool
+    └── permit_io.py    # Permit I/O calculation tool
 ```
 
 ## License
