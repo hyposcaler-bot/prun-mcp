@@ -18,6 +18,21 @@ logger = logging.getLogger(__name__)
 
 MS_PER_DAY = 24 * 60 * 60 * 1000  # Milliseconds per day
 
+
+def calculate_area_limit(permits: int) -> int:
+    """Calculate area limit for given number of permits.
+
+    Args:
+        permits: Number of permits used for this base.
+
+    Returns:
+        Total area available (1st permit = 500, each additional = +250).
+    """
+    if permits <= 0:
+        return 0
+    # 1st permit = 500, each additional = +250
+    return 500 + max(0, permits - 1) * 250
+
 # Shared cache instances
 _buildings_cache: BuildingsCache | None = None
 _recipes_cache: RecipesCache | None = None
@@ -81,6 +96,7 @@ async def calculate_permit_io(
     production: list[dict[str, Any]],
     habitation: list[dict[str, Any]],
     exchange: str,
+    permits: int = 1,
 ) -> str | list[TextContent]:
     """Calculate daily material I/O for a base.
 
@@ -95,12 +111,15 @@ async def calculate_permit_io(
         exchange: Exchange code for pricing (e.g., "CI1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
                   See exchange://list resource for code-to-name mapping.
+        permits: Number of permits for this base (default: 1).
+                 Area limits: 1 permit = 500, 2 = 750, 3 = 1000.
 
     Returns:
         TOON-encoded daily I/O breakdown with:
         - materials: List of {ticker, in, out, delta, cis_per_day}
         - workforce: Required workers by type
         - habitation: Capacity vs required validation
+        - area: Used vs limit validation
         - totals: Net CIS/day
     """
     # Validate exchange
@@ -168,6 +187,10 @@ async def calculate_permit_io(
                 )
             ]
 
+    # Validate permits
+    if permits < 1:
+        return [TextContent(type="text", text="permits must be at least 1")]
+
     try:
         await _ensure_caches_populated()
 
@@ -179,6 +202,8 @@ async def calculate_permit_io(
         material_flow: dict[str, dict[str, float]] = {}
         # Aggregate workforce: type -> count
         total_workforce: dict[str, int] = {wf: 0 for wf in WORKFORCE_TYPES}
+        # Track total area used
+        total_area = 0
         # Track errors
         errors: list[str] = []
 
@@ -233,6 +258,18 @@ async def calculate_permit_io(
             for wf_type in WORKFORCE_TYPES:
                 worker_count = building.get(wf_type, 0) * count
                 total_workforce[wf_type] += worker_count
+
+            # Track area used by production buildings
+            area_cost = building.get("AreaCost", 0)
+            total_area += area_cost * count
+
+        # Add habitation building areas
+        for entry in habitation:
+            hab_ticker = entry["building"].upper()
+            hab_building = buildings_cache.get_building(hab_ticker)
+            if hab_building:
+                area_cost = hab_building.get("AreaCost", 0)
+                total_area += area_cost * entry["count"]
 
         # Calculate workforce consumables
         for wf_type, worker_count in total_workforce.items():
@@ -329,6 +366,9 @@ async def calculate_permit_io(
                 }
             )
 
+        # Calculate area limit
+        area_limit = calculate_area_limit(permits)
+
         # Build result
         result: dict[str, Any] = {
             "exchange": exchange,
@@ -339,6 +379,13 @@ async def calculate_permit_io(
             "habitation": {
                 "validation": hab_validation,
                 "sufficient": hab_sufficient,
+            },
+            "area": {
+                "used": total_area,
+                "limit": area_limit,
+                "permits": permits,
+                "remaining": area_limit - total_area,
+                "sufficient": total_area <= area_limit,
             },
             "totals": {
                 "cis_per_day": round(total_cis_per_day, 2),

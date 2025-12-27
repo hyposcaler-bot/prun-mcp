@@ -13,6 +13,7 @@ Calculate the daily material flow for a base, showing inputs, outputs, deltas, a
 | `production` | array | Yes | List of production lines. Each entry: `{"recipe": string, "count": int, "efficiency": float}` |
 | `habitation` | array | Yes | List of habitation buildings. Each entry: `{"building": string, "count": int}` |
 | `exchange` | string | Yes | Exchange code for pricing (e.g., "CI1"). Valid: AI1, CI1, CI2, IC1, NC1, NC2. |
+| `permits` | integer | No | Number of permits for this base (default: 1). Area limits: 1=500, 2=750, 3=1000. |
 
 ### Production Entry
 
@@ -44,6 +45,12 @@ Returns TOON-encoded daily I/O breakdown including:
 - `habitation`: Capacity validation
   - `validation`: Per-type capacity check (required vs available)
   - `sufficient`: Boolean indicating if housing is adequate
+- `area`: Area usage validation
+  - `used`: Total area consumed by buildings
+  - `limit`: Area limit based on permits (500/750/1000)
+  - `permits`: Number of permits
+  - `remaining`: Limit - used (can be negative)
+  - `sufficient`: Boolean indicating if within area limit
 - `totals`: Summary
   - `cis_per_day`: Net daily profit/loss
 - `errors`: List of any errors (missing recipes, etc.)
@@ -86,6 +93,16 @@ calculate_permit_io(
 )
 ```
 
+**Expanded base with 2 permits (750 area limit):**
+```json
+calculate_permit_io(
+  production=[{"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 40, "efficiency": 1.4}],
+  habitation=[{"building": "HB1", "count": 8}],
+  exchange="CI1",
+  permits=2
+)
+```
+
 ---
 
 ## Workflow
@@ -111,6 +128,7 @@ calculate_permit_io(
    - Positive `delta` = selling surplus at Bid price
    - Negative `delta` = buying deficit at Ask price
    - Check `habitation.sufficient` for housing validation
+   - Check `area.sufficient` for area limit validation
 
 ---
 

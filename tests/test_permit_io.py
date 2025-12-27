@@ -9,7 +9,7 @@ from toon_format import decode as toon_decode
 
 from prun_mcp.cache import BuildingsCache, RecipesCache, WorkforceCache
 from prun_mcp.resources.workforce import HABITATION_CAPACITY
-from prun_mcp.tools.permit_io import calculate_permit_io
+from prun_mcp.tools.permit_io import calculate_area_limit, calculate_permit_io
 
 # Default price for missing tickers
 DEFAULT_PRICE: dict[str, float | None] = {"ask": None, "bid": None}
@@ -30,6 +30,19 @@ SAMPLE_FP_BUILDING = {
     "Engineers": 0,
     "Scientists": 0,
     "AreaCost": 12,
+}
+
+SAMPLE_HB1_BUILDING = {
+    "BuildingId": "hb1-building-id",
+    "Name": "habitationPioneer",
+    "Ticker": "HB1",
+    "Expertise": None,
+    "Pioneers": 0,
+    "Settlers": 0,
+    "Technicians": 0,
+    "Engineers": 0,
+    "Scientists": 0,
+    "AreaCost": 10,
 }
 
 SAMPLE_RECIPES = [
@@ -68,9 +81,9 @@ SAMPLE_WORKFORCE_NEEDS = [
 
 
 def create_buildings_cache(tmp_path: Path) -> BuildingsCache:
-    """Create a cache populated with FP building."""
+    """Create a cache populated with FP and HB1 buildings."""
     cache = BuildingsCache(cache_dir=tmp_path)
-    cache.refresh([SAMPLE_FP_BUILDING])
+    cache.refresh([SAMPLE_FP_BUILDING, SAMPLE_HB1_BUILDING])
     return cache
 
 
@@ -387,3 +400,162 @@ class TestCalculatePermitIo:
         assert grn["out"] == 0
         assert grn["in"] == 4.0
         assert grn["delta"] == -4.0
+
+
+class TestCalculateAreaLimit:
+    """Tests for the calculate_area_limit helper function."""
+
+    def test_single_permit(self) -> None:
+        """1 permit = 500 area."""
+        assert calculate_area_limit(1) == 500
+
+    def test_two_permits(self) -> None:
+        """2 permits = 750 area (500 + 250)."""
+        assert calculate_area_limit(2) == 750
+
+    def test_three_permits(self) -> None:
+        """3 permits = 1000 area (500 + 250 + 250)."""
+        assert calculate_area_limit(3) == 1000
+
+    def test_zero_permits(self) -> None:
+        """0 permits = 0 area."""
+        assert calculate_area_limit(0) == 0
+
+
+class TestAreaValidation:
+    """Tests for area validation in permit_io."""
+
+    async def test_area_calculation(self, tmp_path: Path) -> None:
+        """Should calculate area used by production and habitation."""
+        buildings_cache = create_buildings_cache(tmp_path / "buildings")
+        recipes_cache = create_recipes_cache(tmp_path / "recipes")
+        workforce_cache = create_workforce_cache(tmp_path / "workforce")
+        prices = mock_prices()
+
+        async def mock_fetch_prices(
+            tickers: list[str], exchange: str
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
+
+        with (
+            patch(
+                "prun_mcp.tools.permit_io.get_buildings_cache",
+                return_value=buildings_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_recipes_cache",
+                return_value=recipes_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_workforce_cache",
+                return_value=workforce_cache,
+            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+        ):
+            result = await calculate_permit_io(
+                production=[
+                    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 2, "efficiency": 1}
+                ],
+                habitation=[{"building": "HB1", "count": 1}],
+                exchange="CI1",
+            )
+
+        decoded = cast(dict[str, Any], toon_decode(result))
+        area = decoded["area"]
+
+        # 2 FP * 12 area + 1 HB1 * 10 area = 34 area
+        assert area["used"] == 34
+        assert area["limit"] == 500  # default 1 permit
+        assert area["permits"] == 1
+        assert area["remaining"] == 466
+        assert area["sufficient"] is True
+
+    async def test_area_over_limit(self, tmp_path: Path) -> None:
+        """Should report insufficient when area exceeds limit."""
+        buildings_cache = create_buildings_cache(tmp_path / "buildings")
+        recipes_cache = create_recipes_cache(tmp_path / "recipes")
+        workforce_cache = create_workforce_cache(tmp_path / "workforce")
+        prices = mock_prices()
+
+        async def mock_fetch_prices(
+            tickers: list[str], exchange: str
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
+
+        with (
+            patch(
+                "prun_mcp.tools.permit_io.get_buildings_cache",
+                return_value=buildings_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_recipes_cache",
+                return_value=recipes_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_workforce_cache",
+                return_value=workforce_cache,
+            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+        ):
+            # 42 FP * 12 = 504 area (over 500 limit)
+            result = await calculate_permit_io(
+                production=[
+                    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 42, "efficiency": 1}
+                ],
+                habitation=[],
+                exchange="CI1",
+            )
+
+        decoded = cast(dict[str, Any], toon_decode(result))
+        area = decoded["area"]
+
+        assert area["used"] == 504  # 42 * 12
+        assert area["limit"] == 500
+        assert area["remaining"] == -4
+        assert area["sufficient"] is False
+
+    async def test_area_with_multiple_permits(self, tmp_path: Path) -> None:
+        """Should use correct limit for multiple permits."""
+        buildings_cache = create_buildings_cache(tmp_path / "buildings")
+        recipes_cache = create_recipes_cache(tmp_path / "recipes")
+        workforce_cache = create_workforce_cache(tmp_path / "workforce")
+        prices = mock_prices()
+
+        async def mock_fetch_prices(
+            tickers: list[str], exchange: str
+        ) -> dict[str, dict[str, float | None]]:
+            return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
+
+        with (
+            patch(
+                "prun_mcp.tools.permit_io.get_buildings_cache",
+                return_value=buildings_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_recipes_cache",
+                return_value=recipes_cache,
+            ),
+            patch(
+                "prun_mcp.tools.permit_io.get_workforce_cache",
+                return_value=workforce_cache,
+            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+        ):
+            # 42 FP * 12 = 504 area (under 750 limit with 2 permits)
+            result = await calculate_permit_io(
+                production=[
+                    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 42, "efficiency": 1}
+                ],
+                habitation=[],
+                exchange="CI1",
+                permits=2,
+            )
+
+        decoded = cast(dict[str, Any], toon_decode(result))
+        area = decoded["area"]
+
+        assert area["used"] == 504
+        assert area["limit"] == 750  # 2 permits
+        assert area["permits"] == 2
+        assert area["remaining"] == 246
+        assert area["sufficient"] is True
