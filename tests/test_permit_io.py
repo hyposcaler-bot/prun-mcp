@@ -228,9 +228,7 @@ class TestCalculatePermitIo:
                 "prun_mcp.tools.permit_io.get_workforce_cache",
                 return_value=workforce_cache,
             ),
-            patch(
-                "prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices
-            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -277,9 +275,7 @@ class TestCalculatePermitIo:
                 "prun_mcp.tools.permit_io.get_workforce_cache",
                 return_value=workforce_cache,
             ),
-            patch(
-                "prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices
-            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -320,9 +316,7 @@ class TestCalculatePermitIo:
                 "prun_mcp.tools.permit_io.get_workforce_cache",
                 return_value=workforce_cache,
             ),
-            patch(
-                "prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices
-            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -363,9 +357,7 @@ class TestCalculatePermitIo:
                 "prun_mcp.tools.permit_io.get_workforce_cache",
                 return_value=workforce_cache,
             ),
-            patch(
-                "prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices
-            ),
+            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
