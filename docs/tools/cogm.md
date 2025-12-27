@@ -12,7 +12,6 @@ Calculate the cost to produce one unit of a material based on a recipe, includin
 |-----------|------|----------|-------------|
 | `recipe` | string | Yes | Recipe name (e.g., "1xGRN 1xBEA 1xNUT=>10xRAT"). Use `get_recipe_info` or `search_recipes` to find valid recipe names. |
 | `exchange` | string | Yes | Exchange code for pricing (e.g., "CI1"). Valid: AI1, CI1, CI2, IC1, NC1, NC2. |
-| `building_count` | integer | No | Number of buildings (default: 1) |
 | `efficiency` | float | No | Production efficiency multiplier (default: 1.0 = 100%) |
 | `self_consume` | boolean | No | If true, use produced output to satisfy workforce needs instead of buying from market (default: false) |
 
@@ -22,7 +21,6 @@ Returns TOON-encoded COGM breakdown including:
 
 - `recipe`: The recipe name
 - `building`: Building ticker (e.g., "FP")
-- `building_count`: Number of buildings
 - `efficiency`: Efficiency multiplier
 - `exchange`: Exchange used for pricing
 - `self_consume`: Whether self-consumption is enabled
@@ -61,12 +59,6 @@ calculate_cogm("1xGRN 1xALG 1xVEG=>10xRAT", "CI1", efficiency=1.33)
 calculate_cogm("1xGRN 1xALG 1xVEG=>10xRAT", "CI1", self_consume=true)
 # Uses produced RAT to feed workers instead of buying from market
 # Returns lower COGM and net_output after worker consumption
-```
-
-**Multiple buildings:**
-```
-calculate_cogm("1xGRN 1xALG 1xVEG=>10xRAT", "CI1", building_count=10)
-# Shows daily totals for 10 buildings (COGM per unit is unchanged)
 ```
 
 ---

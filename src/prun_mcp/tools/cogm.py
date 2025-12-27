@@ -81,10 +81,6 @@ async def _ensure_caches_populated() -> None:
 async def calculate_cogm(
     recipe: str,
     exchange: str,
-    # TODO: Investigate if building_count should be removed or made output-only.
-    # It doesn't affect COGM per unit (costs and output scale linearly), only
-    # the absolute daily values in the breakdown.
-    building_count: int = 1,
     efficiency: float = 1.0,
     self_consume: bool = False,
 ) -> str | list[TextContent]:
@@ -96,7 +92,6 @@ async def calculate_cogm(
         exchange: Exchange code for pricing (e.g., "CI1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
                   See exchange://list resource for code-to-name mapping.
-        building_count: Number of buildings (default: 1)
         efficiency: Production efficiency multiplier (default: 1.0 = 100%)
         self_consume: If True, use produced output to satisfy workforce needs
                      instead of buying from market. Reduces net output but
@@ -117,15 +112,6 @@ async def calculate_cogm(
             TextContent(
                 type="text",
                 text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
-
-    # Validate building_count
-    if building_count < 1:
-        return [
-            TextContent(
-                type="text",
-                text="building_count must be at least 1",
             )
         ]
 
@@ -177,7 +163,7 @@ async def calculate_cogm(
                 )
             ]
 
-        runs_per_day = MS_PER_DAY / duration_ms * building_count * efficiency
+        runs_per_day = MS_PER_DAY / duration_ms * efficiency
 
         # Get output info (assume first output is the primary one)
         outputs = recipe_data.get("Outputs", [])
@@ -206,7 +192,7 @@ async def calculate_cogm(
         # Get workforce consumable tickers
         consumable_tickers: set[str] = set()
         for wf_type in WORKFORCE_TYPES:
-            worker_count = building.get(wf_type, 0) * building_count
+            worker_count = building.get(wf_type, 0)
             if worker_count > 0:
                 wf_type_upper = wf_type.upper()
                 # Handle "Pioneers" -> "PIONEER" (remove trailing 's')
@@ -261,7 +247,7 @@ async def calculate_cogm(
         daily_consumable_cost = 0.0
 
         for wf_type in WORKFORCE_TYPES:
-            worker_count = building.get(wf_type, 0) * building_count
+            worker_count = building.get(wf_type, 0)
             if worker_count <= 0:
                 continue
 
@@ -335,7 +321,6 @@ async def calculate_cogm(
         result: dict[str, Any] = {
             "recipe": recipe,
             "building": building_ticker,
-            "building_count": building_count,
             "efficiency": efficiency,
             "exchange": exchange,
             "self_consume": self_consume,

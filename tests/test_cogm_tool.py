@@ -145,49 +145,11 @@ class TestCalculateCogm:
         # Verify basic values
         assert decoded["recipe"] == "1xGRN 1xBEA 1xNUT=>10xRAT"  # type: ignore[index]
         assert decoded["building"] == "FP"  # type: ignore[index]
-        assert decoded["building_count"] == 1  # type: ignore[index]
         assert decoded["efficiency"] == 1.0  # type: ignore[index]
         assert decoded["exchange"] == "CI1"  # type: ignore[index]
 
         # COGM should be positive
         assert decoded["cogm_per_unit"] > 0  # type: ignore[index]
-
-    async def test_multiple_buildings(self, tmp_path: Path) -> None:
-        """Test COGM calculation with multiple buildings."""
-        buildings_cache = create_buildings_cache(tmp_path / "buildings")
-        recipes_cache = create_recipes_cache(tmp_path / "recipes")
-        workforce_cache = create_workforce_cache(tmp_path / "workforce")
-        prices = mock_prices()
-
-        async def mock_fetch_prices(
-            tickers: list[str], exchange: str
-        ) -> dict[str, dict[str, float | None]]:
-            return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
-
-        with (
-            patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
-            ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
-            patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
-            ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
-        ):
-            result = await calculate_cogm(
-                recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
-                exchange="CI1",
-                building_count=10,
-            )
-
-        assert isinstance(result, str)
-        decoded = toon_decode(result)
-
-        # With 10 buildings, daily output should be 10x
-        assert decoded["building_count"] == 10  # type: ignore[index]
-        output = decoded["output"]  # type: ignore[index]
-        # 4 runs/day * 10 buildings * 10 RAT = 400 RAT/day
-        assert output["DailyOutput"] == 400.0  # type: ignore[index]
 
     async def test_efficiency_bonus(self, tmp_path: Path) -> None:
         """Test COGM calculation with efficiency bonus."""
@@ -263,19 +225,6 @@ class TestCalculateCogm:
         assert len(result) == 1
         assert isinstance(result[0], TextContent)
         assert "Recipe not found" in result[0].text
-
-    async def test_invalid_building_count(self, tmp_path: Path) -> None:
-        """Test COGM calculation with invalid building count."""
-        result = await calculate_cogm(
-            recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
-            exchange="CI1",
-            building_count=0,
-        )
-
-        assert isinstance(result, list)
-        assert len(result) == 1
-        assert isinstance(result[0], TextContent)
-        assert "building_count" in result[0].text
 
     async def test_invalid_efficiency(self, tmp_path: Path) -> None:
         """Test COGM calculation with invalid efficiency."""
