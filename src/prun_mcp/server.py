@@ -25,6 +25,7 @@ from prun_mcp.tools import planets  # noqa: F401, E402
 from prun_mcp.tools import recipes  # noqa: F401, E402
 
 # Import resources to register them
+from prun_mcp.resources import buildings as buildings_res  # noqa: F401, E402
 from prun_mcp.resources import exchanges  # noqa: F401, E402
 from prun_mcp.resources import workforce  # noqa: F401, E402
 

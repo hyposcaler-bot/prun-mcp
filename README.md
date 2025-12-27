@@ -106,6 +106,11 @@ Or with Docker:
 | `exchange://list` | List all commodity exchanges with codes and names |
 | `workforce://types` | List workforce types in tier order (Pioneers → Scientists) |
 | `workforce://habitation` | List habitation buildings with workforce capacities |
+| `buildings://efficiency` | Building efficiency formula and factors overview |
+| `buildings://efficiency/workforce` | Workforce satisfaction impact on efficiency |
+| `buildings://efficiency/experts` | Expert bonus system (up to ~28.4%) |
+| `buildings://efficiency/cogc` | CoGC ADVERTISING program bonuses (up to 25%) |
+| `buildings://efficiency/condition` | Building condition and maintenance |
 
 ## Configuration
 
@@ -149,6 +154,7 @@ src/prun_mcp/
 │   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
 ├── resources/
 │   ├── __init__.py
+│   ├── buildings.py    # Building efficiency documentation
 │   ├── exchanges.py    # Exchange data resource
 │   └── workforce.py    # Workforce types and habitation resource
 └── tools/
