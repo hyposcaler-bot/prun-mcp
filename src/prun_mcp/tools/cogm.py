@@ -91,6 +91,7 @@ async def calculate_cogm(
                 Use get_recipe_info or search_recipes to find valid recipe names.
         exchange: Exchange code for pricing (e.g., "CI1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
+                  See exchange://list resource for code-to-name mapping.
         efficiency: Production efficiency multiplier (default: 1.0 = 100%)
         self_consume: If True, use produced output to satisfy workforce needs
                      instead of buying from market. Reduces net output but
