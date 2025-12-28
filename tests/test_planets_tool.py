@@ -28,7 +28,13 @@ class TestGetPlanetInfo:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_PLANET_KATOA
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("Katoa")
 
         assert isinstance(result, str)
@@ -49,7 +55,13 @@ class TestGetPlanetInfo:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_PLANET_KATOA
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("XK-745b")
 
         assert isinstance(result, str)
@@ -60,7 +72,13 @@ class TestGetPlanetInfo:
         mock_client = AsyncMock()
         mock_client.get_planet.side_effect = [SAMPLE_PLANET_KATOA, SAMPLE_PLANET_MONTEM]
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("Katoa,Montem")
 
         assert isinstance(result, str)
@@ -77,7 +95,13 @@ class TestGetPlanetInfo:
         mock_client = AsyncMock()
         mock_client.get_planet.side_effect = [SAMPLE_PLANET_KATOA, SAMPLE_PLANET_MONTEM]
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("Katoa, Montem")
 
         assert isinstance(result, str)
@@ -94,7 +118,13 @@ class TestGetPlanetInfo:
             SAMPLE_PLANET_MONTEM,
         ]
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("Katoa,INVALID,Montem")
 
         assert isinstance(result, str)
@@ -119,7 +149,13 @@ class TestGetPlanetInfo:
             FIONotFoundError("Planet", "INVALID2"),
         ]
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("INVALID1,INVALID2")
 
         assert isinstance(result, list)
@@ -136,7 +172,13 @@ class TestGetPlanetInfo:
             "Server error", status_code=500
         )
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        mock_cache = MagicMock()
+        mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
+
+        with (
+            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache),
+        ):
             result = await get_planet_info("Katoa")
 
         assert isinstance(result, list)
