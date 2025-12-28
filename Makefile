@@ -1,35 +1,32 @@
-.PHONY: test lint typecheck check run docker-build docker-run clean
+.PHONY: help test lint typecheck check run docker-build docker-run clean
 
-# Run tests
-test:
+.DEFAULT_GOAL := help
+
+help: ## Show this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+test: ## Run tests
 	PYTEST_DISABLE_PLUGIN_AUTOLOAD="" uv run --frozen pytest
 
-# Lint and format code
-lint:
+lint: ## Lint and format code
 	uv run --frozen ruff check .
 	uv run --frozen ruff format .
 
-# Type checking
-typecheck:
+typecheck: ## Run type checking
 	uv run --frozen pyright
 
-# Run all checks (lint, typecheck, test)
-check: lint typecheck test
+check: lint typecheck test ## Run all checks (lint, typecheck, test)
 
-# Run MCP server locally
-run:
+run: ## Run MCP server locally
 	uv run prun-mcp
 
-# Build Docker image
-docker-build:
+docker-build: ## Build Docker image
 	docker build -t ghcr.io/hyposcaler-bot/prun-mcp:latest .
 
-# Run in Docker (STDIO mode)
-docker-run: docker-build
+docker-run: docker-build ## Run in Docker (STDIO mode)
 	docker run -i ghcr.io/hyposcaler-bot/prun-mcp:latest
 
-# Clean build artifacts
-clean:
+clean: ## Clean build artifacts
 	rm -rf .pytest_cache __pycache__ .ruff_cache
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
