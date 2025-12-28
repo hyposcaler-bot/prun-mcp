@@ -2,7 +2,6 @@ name: Docker
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
 
 env:
@@ -10,7 +9,11 @@ env:
   IMAGE_NAME: hyposcaler-bot/prun-mcp
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build-and-push:
+    needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,8 +35,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest
             type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
       - uses: docker/build-push-action@v6
         with:
