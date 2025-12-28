@@ -33,6 +33,7 @@ def calculate_area_limit(permits: int) -> int:
     # 1st permit = 500, each additional = +250
     return 500 + max(0, permits - 1) * 250
 
+
 # Shared cache instances
 _buildings_cache: BuildingsCache | None = None
 _recipes_cache: RecipesCache | None = None

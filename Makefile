@@ -22,11 +22,11 @@ run:
 
 # Build Docker image
 docker-build:
-	docker build -t prun-mcp:latest .
+	docker build -t ghcr.io/hyposcaler-bot/prun-mcp:latest .
 
 # Run in Docker (STDIO mode)
 docker-run: docker-build
-	docker run -i prun-mcp:latest
+	docker run -i ghcr.io/hyposcaler-bot/prun-mcp:latest
 
 # Clean build artifacts
 clean:

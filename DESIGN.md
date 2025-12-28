@@ -14,6 +14,7 @@ For TOON serialization it will use the python library from [toon-format/toon-pyt
 
 It will rely on the FIO REST API to gather live information from the game, a swagger spec for the API can be found in [./docs/FIO/fio-swagger.json](./docs/FIO/fio-swagger.json)
 
+
 ## Design Principles
 
 
@@ -243,6 +244,7 @@ See [docs/mechanics.md](docs/mechanics.md) for game mechanics reference (buildin
 
 - [The Prosperous Universe Handbook Wiki](https://handbook.apex.prosperousuniverse.com/wiki/)
 - [The Prosperous Universe Documentation GitHub repo](https://github.com/simulogics/prosperousuniverse-docs)
+- [The Prodperous Universe Forums](https://com.prosperousuniverse.com/latest)
 - [PrUn Community Derived Information](https://pct.fnar.net/)
 - [Benten Economic Union Website](https://benten.space/)
 - [MoonSugarTravels desgradation spreadsheet](https://docs.google.com/spreadsheets/d/1ELsfw4ii1hQFWDd-BL4JzwqHc-wGVXbJtvAeprv0pZ0)

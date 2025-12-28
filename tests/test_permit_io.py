@@ -500,7 +500,11 @@ class TestAreaValidation:
             # 42 FP * 12 = 504 area (over 500 limit)
             result = await calculate_permit_io(
                 production=[
-                    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 42, "efficiency": 1}
+                    {
+                        "recipe": "1xGRN 1xALG 1xVEG=>10xRAT",
+                        "count": 42,
+                        "efficiency": 1,
+                    }
                 ],
                 habitation=[],
                 exchange="CI1",
@@ -544,7 +548,11 @@ class TestAreaValidation:
             # 42 FP * 12 = 504 area (under 750 limit with 2 permits)
             result = await calculate_permit_io(
                 production=[
-                    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 42, "efficiency": 1}
+                    {
+                        "recipe": "1xGRN 1xALG 1xVEG=>10xRAT",
+                        "count": 42,
+                        "efficiency": 1,
+                    }
                 ],
                 habitation=[],
                 exchange="CI1",

@@ -561,3 +561,91 @@ def mock_fio_exchange_not_found_transport() -> MockTransport:
             "/exchange/INVALID.CI1": httpx.Response(204),
         }
     )
+
+
+# Sample planet search results from POST /planet/search
+# Uses MaterialId format that needs to be mapped to tickers
+SAMPLE_SEARCH_PLANETS = [
+    {
+        "PlanetId": "planet-1",
+        "PlanetNaturalId": "AB-123a",
+        "PlanetName": "Promitor",
+        "Gravity": 0.92,
+        "Temperature": 22.5,
+        "Fertility": 0.95,
+        "Resources": [
+            {"MaterialId": "mat-feo", "Factor": 0.35},
+            {"MaterialId": "mat-lst", "Factor": 0.28},
+            {"MaterialId": "mat-h2o", "Factor": 0.12},
+        ],
+    },
+    {
+        "PlanetId": "planet-2",
+        "PlanetNaturalId": "CD-456b",
+        "PlanetName": "Vallis",
+        "Gravity": 1.15,
+        "Temperature": 18.3,
+        "Fertility": -1,
+        "Resources": [
+            {"MaterialId": "mat-feo", "Factor": 0.42},
+            {"MaterialId": "mat-si", "Factor": 0.31},
+            {"MaterialId": "mat-o", "Factor": 0.15},
+        ],
+    },
+    {
+        "PlanetId": "planet-3",
+        "PlanetNaturalId": "EF-789c",
+        "PlanetName": "Berthier",
+        "Gravity": 0.88,
+        "Temperature": 25.1,
+        "Fertility": 0.72,
+        "Resources": [
+            {"MaterialId": "mat-h2o", "Factor": 0.55},
+            {"MaterialId": "mat-o", "Factor": 0.21},
+        ],
+    },
+]
+
+# Extended materials list for search_planets tests
+SAMPLE_MATERIALS_EXTENDED = [
+    {
+        "MaterialId": "mat-feo",
+        "Ticker": "FEO",
+        "Name": "ironOre",
+        "CategoryName": "ores",
+        "Weight": 2.0,
+        "Volume": 1.0,
+    },
+    {
+        "MaterialId": "mat-lst",
+        "Ticker": "LST",
+        "Name": "limestone",
+        "CategoryName": "ores",
+        "Weight": 2.5,
+        "Volume": 1.0,
+    },
+    {
+        "MaterialId": "mat-h2o",
+        "Ticker": "H2O",
+        "Name": "water",
+        "CategoryName": "consumables (basic)",
+        "Weight": 0.1,
+        "Volume": 0.1,
+    },
+    {
+        "MaterialId": "mat-si",
+        "Ticker": "SI",
+        "Name": "silicon",
+        "CategoryName": "minerals",
+        "Weight": 0.5,
+        "Volume": 0.2,
+    },
+    {
+        "MaterialId": "mat-o",
+        "Ticker": "O",
+        "Name": "oxygen",
+        "CategoryName": "gases",
+        "Weight": 0.05,
+        "Volume": 0.1,
+    },
+]

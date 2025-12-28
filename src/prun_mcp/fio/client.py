@@ -278,6 +278,53 @@ class FIOClient:
             logger.exception("HTTP error while fetching workforce needs")
             raise FIOApiError(f"HTTP error: {e}") from e
 
+    async def search_planets(
+        self,
+        materials: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Search planets by resource criteria via POST /planet/search.
+
+        Args:
+            materials: List of material tickers that must be present (max 4).
+                      The API returns planets containing ALL specified materials.
+
+        Returns:
+            List of planet dictionaries matching the search criteria.
+
+        Raises:
+            FIOApiError: If the API returns an error.
+        """
+        payload: dict[str, Any] = {
+            "IncludeRocky": True,
+            "IncludeGaseous": True,
+            "IncludeLowGravity": True,
+            "IncludeHighGravity": True,
+            "IncludeLowPressure": True,
+            "IncludeHighPressure": True,
+            "IncludeLowTemperature": True,
+            "IncludeHighTemperature": True,
+        }
+        if materials:
+            # API supports up to 4 materials
+            payload["Materials"] = [m.upper() for m in materials[:4]]
+
+        client = await self._get_client()
+        try:
+            response = await client.post("/planet/search", json=payload)
+
+            if response.status_code != 200:
+                _log_api_error(response, "search_planets")
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while searching planets")
+            raise FIOApiError(f"HTTP error: {e}") from e
+
 
 # Singleton instance
 _fio_client: FIOClient | None = None
