@@ -278,6 +278,47 @@ class FIOClient:
             logger.exception("HTTP error while fetching workforce needs")
             raise FIOApiError(f"HTTP error: {e}") from e
 
+    async def get_price_history(
+        self, ticker: str, exchange: str
+    ) -> list[dict[str, Any]]:
+        """Fetch CXPC price history data for a material on an exchange.
+
+        Args:
+            ticker: Material ticker symbol (e.g., "RAT", "COF")
+            exchange: Exchange code (e.g., "CI1", "NC1")
+
+        Returns:
+            List of OHLCV candle dictionaries with fields:
+            - Interval: Time interval (e.g., "DAY_ONE")
+            - DateEpochMs: Timestamp in milliseconds
+            - Open, High, Low, Close: Price data
+            - Volume: Total value traded
+            - Traded: Units traded
+
+        Raises:
+            FIONotFoundError: If no price history exists
+            FIOApiError: If the API returns an error
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get(f"/exchange/cxpc/{ticker}.{exchange}")
+
+            if response.status_code == 204:
+                raise FIONotFoundError("PriceHistory", f"{ticker}.{exchange}")
+
+            if response.status_code != 200:
+                _log_api_error(response, f"get_price_history({ticker}.{exchange})")
+                raise FIOApiError(
+                    f"FIO API error: {response.status_code}",
+                    status_code=response.status_code,
+                )
+
+            return response.json()
+
+        except httpx.HTTPError as e:
+            logger.exception("HTTP error while fetching price history")
+            raise FIOApiError(f"HTTP error: {e}") from e
+
     async def search_planets(
         self,
         materials: list[str] | None = None,

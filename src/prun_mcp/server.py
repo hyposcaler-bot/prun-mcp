@@ -21,6 +21,7 @@ from prun_mcp.tools import buildings  # noqa: F401, E402
 from prun_mcp.tools import cogm  # noqa: F401, E402
 from prun_mcp.tools import permit_io  # noqa: F401, E402
 from prun_mcp.tools import exchange  # noqa: F401, E402
+from prun_mcp.tools import market_analysis  # noqa: F401, E402
 from prun_mcp.tools import materials  # noqa: F401, E402
 from prun_mcp.tools import planets  # noqa: F401, E402
 from prun_mcp.tools import recipes  # noqa: F401, E402

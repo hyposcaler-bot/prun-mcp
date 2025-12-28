@@ -107,7 +107,13 @@ async def get_exchange_all(exchange: str) -> str | list[TextContent]:
 
     Returns:
         TOON-encoded list of all material prices on the exchange(s).
-        Summary data only (no order book).
+        Returns ~370 materials per exchange with fields:
+        - MaterialTicker, ExchangeCode: identifiers
+        - Bid, BidCount, Demand: buy-side (highest bid, order count, total demand)
+        - Ask, AskCount, Supply: sell-side (lowest ask, order count, total supply)
+        - PriceAverage: recent average price
+        - MMBuy, MMSell: market maker prices (null if not set)
+        Summary data only (no order book details).
     """
     # Parse comma-separated exchanges
     exchanges = [e.strip().upper() for e in exchange.split(",")]

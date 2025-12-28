@@ -96,6 +96,7 @@ Or with Docker:
 | Planets | `get_planet_info` | [docs/tools/planets.md](docs/tools/planets.md) |
 | Recipes | `get_recipe_info`, `search_recipes`, `refresh_recipes_cache` | [docs/tools/recipes.md](docs/tools/recipes.md) |
 | Exchange | `get_exchange_prices`, `get_exchange_all` | [docs/tools/exchange.md](docs/tools/exchange.md) |
+| Market Analysis | `get_market_summary`, `analyze_fill_cost`, `get_price_history_summary`, `get_order_book_depth`, `get_price_history` | [docs/tools/market_analysis.md](docs/tools/market_analysis.md) |
 | COGM | `calculate_cogm` | [docs/tools/cogm.md](docs/tools/cogm.md) |
 | Permit I/O | `calculate_permit_io` | [docs/tools/permit_io.md](docs/tools/permit_io.md) |
 
@@ -159,13 +160,14 @@ src/prun_mcp/
 │   └── workforce.py    # Workforce types and habitation resource
 └── tools/
     ├── __init__.py
-    ├── materials.py    # Material-related tools
-    ├── buildings.py    # Building-related tools
-    ├── planets.py      # Planet-related tools (no cache)
-    ├── recipes.py      # Recipe-related tools
-    ├── exchange.py     # Exchange/pricing tools (no cache)
-    ├── cogm.py         # COGM calculation tool
-    └── permit_io.py    # Permit I/O calculation tool
+    ├── materials.py        # Material-related tools
+    ├── buildings.py        # Building-related tools
+    ├── planets.py          # Planet-related tools (no cache)
+    ├── recipes.py          # Recipe-related tools
+    ├── exchange.py         # Exchange/pricing tools (no cache)
+    ├── market_analysis.py  # Market analysis tools (no cache)
+    ├── cogm.py             # COGM calculation tool
+    └── permit_io.py        # Permit I/O calculation tool
 ```
 
 ## License
