@@ -25,7 +25,6 @@ async def get_exchange_prices(ticker: str, exchange: str) -> str | list[TextCont
         exchange: Exchange code(s). Can be single (e.g., "CI1")
                   or comma-separated (e.g., "CI1,NC1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
-                  See exchange://list resource for code-to-name mapping.
 
     Returns:
         TOON-encoded price data including full order book (BuyingOrders,
@@ -103,7 +102,6 @@ async def get_exchange_all(exchange: str) -> str | list[TextContent]:
         exchange: Exchange code(s). Can be single (e.g., "CI1")
                   or comma-separated (e.g., "CI1,NC1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
-                  See exchange://list resource for code-to-name mapping.
 
     Returns:
         TOON-encoded list of all material prices on the exchange(s).

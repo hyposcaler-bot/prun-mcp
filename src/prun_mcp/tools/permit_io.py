@@ -111,7 +111,6 @@ async def calculate_permit_io(
                    - count: Number of buildings
         exchange: Exchange code for pricing (e.g., "CI1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
-                  See exchange://list resource for code-to-name mapping.
         permits: Number of permits for this base (default: 1).
                  Area limits: 1 permit = 500, 2 = 750, 3 = 1000.
 

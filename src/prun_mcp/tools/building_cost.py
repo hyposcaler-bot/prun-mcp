@@ -159,7 +159,6 @@ async def calculate_building_cost(
         planet: Planet identifier (name, natural ID, or planet ID).
         exchange: Optional exchange code for cost calculation (e.g., "CI1").
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
-                  See exchange://list resource for code-to-name mapping.
 
     Returns:
         TOON-encoded breakdown of materials including base costs
