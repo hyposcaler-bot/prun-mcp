@@ -2,8 +2,12 @@
 
 import os
 import subprocess
+import time
+from typing import Any
 
 from importlib.metadata import version as pkg_version
+
+from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 
@@ -78,3 +82,79 @@ def get_version() -> str:
     else:
         # Fall back to package version
         return version
+
+
+@mcp.tool()
+def get_cache_info() -> str:
+    """Get cache status for all data caches.
+
+    Returns:
+        TOON-encoded cache info including validity, counts, age, and file paths.
+    """
+    # Import cache getters here to avoid circular imports
+    from prun_mcp.tools.buildings import get_buildings_cache
+    from prun_mcp.tools.materials import get_materials_cache
+    from prun_mcp.tools.permit_io import get_workforce_cache
+    from prun_mcp.tools.recipes import get_recipes_cache
+
+    caches_info: list[dict[str, Any]] = []
+    now = time.time()
+
+    # Materials cache
+    materials_cache = get_materials_cache()
+    caches_info.append(_get_cache_status("materials", materials_cache, now))
+
+    # Buildings cache
+    buildings_cache = get_buildings_cache()
+    caches_info.append(_get_cache_status("buildings", buildings_cache, now))
+
+    # Recipes cache
+    recipes_cache = get_recipes_cache()
+    caches_info.append(_get_cache_status("recipes", recipes_cache, now))
+
+    # Workforce cache
+    workforce_cache = get_workforce_cache()
+    caches_info.append(_get_cache_status("workforce", workforce_cache, now))
+
+    return toon_encode({"caches": caches_info})
+
+
+def _get_cache_status(name: str, cache: Any, now: float) -> dict[str, Any]:
+    """Get status info for a single cache.
+
+    Args:
+        name: Cache name for display.
+        cache: Cache instance with is_valid(), cache_file, ttl_hours.
+        now: Current timestamp for age calculation.
+
+    Returns:
+        Dict with cache status info.
+    """
+    cache_file = cache.cache_file
+    valid = cache.is_valid()
+
+    # Get count based on cache type
+    if hasattr(cache, "material_count"):
+        count = cache.material_count()
+    elif hasattr(cache, "building_count"):
+        count = cache.building_count()
+    elif hasattr(cache, "recipe_count"):
+        count = cache.recipe_count()
+    else:
+        # Workforce cache doesn't have a count method, check data directly
+        count = len(cache.get_all_needs()) if hasattr(cache, "get_all_needs") else 0
+
+    # Calculate age if file exists
+    age_hours: float | None = None
+    if cache_file.exists():
+        mtime = cache_file.stat().st_mtime
+        age_hours = round((now - mtime) / 3600, 2)
+
+    return {
+        "name": name,
+        "valid": valid,
+        "count": count,
+        "path": str(cache_file.resolve()),
+        "age_hours": age_hours,
+        "ttl_hours": cache.ttl_hours,
+    }

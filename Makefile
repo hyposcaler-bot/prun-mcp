@@ -24,10 +24,10 @@ docker-build: ## Build Docker image
 	docker build \
 		--build-arg GIT_BRANCH=$$(git rev-parse --abbrev-ref HEAD) \
 		--build-arg GIT_COMMIT=$$(git rev-parse --short HEAD) \
-		-t ghcr.io/hyposcaler-bot/prun-mcp:latest .
+		-t prun-mcp:latest .
 
 docker-run: docker-build ## Run in Docker (STDIO mode)
-	docker run -i ghcr.io/hyposcaler-bot/prun-mcp:latest
+	docker run -i prun-mcp:latest
 
 clean: ## Clean build artifacts
 	rm -rf .pytest_cache __pycache__ .ruff_cache
