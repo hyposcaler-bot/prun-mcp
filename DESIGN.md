@@ -196,6 +196,7 @@ prun-mcp/
 | Tool | Description |
 |------|-------------|
 | `get_planet_info` | Planet details by name/ID (supports comma-separated) |
+| `search_planets` | Find planets by resource criteria |
 
 #### Exchange
 
@@ -203,6 +204,14 @@ prun-mcp/
 |------|-------------|
 | `get_exchange_prices` | Full order book for material(s) at exchange(s) |
 | `get_exchange_all` | Summary prices for all materials on exchange(s) |
+
+#### Analysis Tools
+
+| Tool | Description |
+|------|-------------|
+| `calculate_cogm` | Cost of Goods Manufactured for a recipe |
+| `calculate_permit_io` | Daily material I/O for a base configuration |
+| `calculate_building_cost` | Total material cost to build on a planet (incl. infrastructure) |
 
 ---
 
@@ -213,7 +222,6 @@ prun-mcp/
 | Tool | Description |
 |------|-------------|
 | `get_price_history` | Historical CXPC price data |
-| `search_planets` | Find planets by resource criteria |
 
 #### Analysis Tools
 
@@ -224,7 +232,6 @@ These tools require server-side computation and return plain text summaries:
 | `find_arbitrage` | Cross-exchange arbitrage opportunities |
 | `compare_spreads` | Bid/ask spread comparison |
 | `calculate_production_profit` | COGM-based profit calculation |
-| `calculate_building_cost` | Total cost to build on a planet |
 | `calculate_workforce_consumption` | Daily consumable needs |
 
 #### Repair/Degradation Tools
