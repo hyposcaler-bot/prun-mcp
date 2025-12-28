@@ -4,6 +4,10 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: hyposcaler-bot/prun-mcp
@@ -15,10 +19,6 @@ jobs:
   build-and-push:
     needs: ci
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - uses: actions/checkout@v4
 
