@@ -21,7 +21,10 @@ run: ## Run MCP server locally
 	uv run prun-mcp
 
 docker-build: ## Build Docker image
-	docker build -t ghcr.io/hyposcaler-bot/prun-mcp:latest .
+	docker build \
+		--build-arg GIT_BRANCH=$$(git rev-parse --abbrev-ref HEAD) \
+		--build-arg GIT_COMMIT=$$(git rev-parse --short HEAD) \
+		-t ghcr.io/hyposcaler-bot/prun-mcp:latest .
 
 docker-run: docker-build ## Run in Docker (STDIO mode)
 	docker run -i ghcr.io/hyposcaler-bot/prun-mcp:latest

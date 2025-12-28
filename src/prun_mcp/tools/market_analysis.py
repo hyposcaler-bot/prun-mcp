@@ -100,9 +100,7 @@ def _generate_market_warnings(
 
     if bid is not None:
         bid_depth = sum(
-            o.get("ItemCount", 0)
-            for o in buying_orders
-            if o.get("ItemCost") == bid
+            o.get("ItemCount", 0) for o in buying_orders if o.get("ItemCost") == bid
         )
         if 0 < bid_depth < THIN_DEPTH_THRESHOLD:
             warnings.append(
@@ -112,9 +110,7 @@ def _generate_market_warnings(
 
     if ask is not None:
         ask_depth = sum(
-            o.get("ItemCount", 0)
-            for o in selling_orders
-            if o.get("ItemCost") == ask
+            o.get("ItemCount", 0) for o in selling_orders if o.get("ItemCost") == ask
         )
         if 0 < ask_depth < THIN_DEPTH_THRESHOLD:
             warnings.append(
@@ -224,7 +220,9 @@ def _format_market_summary_section(
             f"Ratio: {ratio:.1f}x ({market_type})"
         )
     else:
-        lines.append(f"Supply: {_format_number(supply)} | Demand: {_format_number(demand)}")
+        lines.append(
+            f"Supply: {_format_number(supply)} | Demand: {_format_number(demand)}"
+        )
 
     # Market Maker prices (if present)
     mm_buy = data.get("MMBuy")
@@ -323,9 +321,7 @@ async def get_market_summary(ticker: str, exchange: str) -> str | list[TextConte
     return "\n".join(output_parts)
 
 
-def _walk_order_book(
-    orders: list[dict[str, Any]], quantity: int
-) -> dict[str, Any]:
+def _walk_order_book(orders: list[dict[str, Any]], quantity: int) -> dict[str, Any]:
     """Walk an order book to fill a quantity.
 
     Args:
@@ -354,12 +350,14 @@ def _walk_order_book(
         cumulative_cost += take * price
         worst_price = price
 
-        fills.append({
-            "price": price,
-            "units": take,
-            "cumulative": cumulative_units,
-            "cumulative_cost": round(cumulative_cost, 2),
-        })
+        fills.append(
+            {
+                "price": price,
+                "units": take,
+                "cumulative": cumulative_units,
+                "cumulative_cost": round(cumulative_cost, 2),
+            }
+        )
 
     can_fill = cumulative_units >= quantity
     fill_quantity = cumulative_units
@@ -414,11 +412,16 @@ def _generate_fill_recommendations(
         for fill in fills:
             if fill["cumulative"] >= target_units:
                 if fill["price"] != best_fill["price"]:
-                    fill_pct = (fill["cumulative"] / quantity * 100)
+                    fill_pct = fill["cumulative"] / quantity * 100
                     # Calculate VWAP to this point
                     vwap_here = fill["cumulative_cost"] / fill["cumulative"]
-                    improvement = abs(vwap_here - fills[-1]["cumulative_cost"] / fills[-1]["cumulative"])
-                    improvement_pct = (improvement / vwap_here * 100) if vwap_here > 0 else 0
+                    improvement = abs(
+                        vwap_here
+                        - fills[-1]["cumulative_cost"] / fills[-1]["cumulative"]
+                    )
+                    improvement_pct = (
+                        (improvement / vwap_here * 100) if vwap_here > 0 else 0
+                    )
                     recommendations.append(
                         f"Limit at {fill['price']} would fill {fill['cumulative']} units "
                         f"({fill_pct:.0f}%) with {improvement_pct:.2f}% better avg price"
@@ -429,7 +432,9 @@ def _generate_fill_recommendations(
     if fills and fills[-1]["cumulative"] >= quantity:
         final_vwap = fills[-1]["cumulative_cost"] / fills[-1]["cumulative"]
         slippage = abs(final_vwap - best_fill["price"])
-        slippage_pct = (slippage / best_fill["price"] * 100) if best_fill["price"] > 0 else 0
+        slippage_pct = (
+            (slippage / best_fill["price"] * 100) if best_fill["price"] > 0 else 0
+        )
         recommendations.append(
             f"Market order fills all {quantity} at {final_vwap:.2f} avg "
             f"({slippage_pct:.2f}% slippage)"
@@ -559,7 +564,7 @@ async def analyze_fill_cost(
     # Add warnings for partial fills
     if not fill_result["can_fill"]:
         total_available = sum(o["units"] for o in orders)
-        pct_fillable = (fill_result["fill_quantity"] / quantity * 100)
+        pct_fillable = fill_result["fill_quantity"] / quantity * 100
         result["warnings"] = [
             f"Insufficient {'supply' if direction == 'buy' else 'demand'} — "
             f"can only fill {fill_result['fill_quantity']} of {quantity} units "
@@ -1082,18 +1087,20 @@ async def get_price_history(
         formatted_daily = []
         for candle in daily_candles:
             date_ms = candle.get("DateEpochMs", 0)
-            date_str = datetime.fromtimestamp(
-                date_ms / 1000, tz=timezone.utc
-            ).strftime("%Y-%m-%d")
+            date_str = datetime.fromtimestamp(date_ms / 1000, tz=timezone.utc).strftime(
+                "%Y-%m-%d"
+            )
 
-            formatted_daily.append({
-                "date": date_str,
-                "open": candle.get("Open"),
-                "high": candle.get("High"),
-                "low": candle.get("Low"),
-                "close": candle.get("Close"),
-                "volume": candle.get("Traded", 0),
-            })
+            formatted_daily.append(
+                {
+                    "date": date_str,
+                    "open": candle.get("Open"),
+                    "high": candle.get("High"),
+                    "low": candle.get("Low"),
+                    "close": candle.get("Close"),
+                    "volume": candle.get("Traded", 0),
+                }
+            )
 
         stats = _calculate_price_stats(daily_candles)
 
