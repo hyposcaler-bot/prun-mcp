@@ -1,4 +1,4 @@
-# Base Plan Storage Tools - Rough Design Spec
+# Base Plan Storage Tools - Design Spec
 
 ## Overview
 
@@ -14,28 +14,35 @@ Add persistent storage for base plan configurations to prun-mcp server. Allows s
   "planet": "KW-020c",
   "planet_name": "Milliways",
   "cogc_program": "FOOD",
-  "experts": {
-    "agriculture": 0,
-    "chemistry": 0,
-    "construction": 0,
-    "electronics": 0,
-    "food_industries": 3,
-    "fuel_refining": 0,
-    "manufacturing": 0,
-    "metallurgy": 0,
-    "resource_extraction": 0
+  "expertise": {
+    "Agriculture": 0,
+    "Chemistry": 0,
+    "Construction": 0,
+    "Electronics": 0,
+    "FoodIndustries": 3,
+    "FuelRefining": 0,
+    "Manufacturing": 0,
+    "Metallurgy": 0,
+    "ResourceExtraction": 0
   },
-  "infrastructure": [
-    {"type": "HB1", "count": 5},
-    {"type": "HB2", "count": 0},
-    {"type": "HB3", "count": 0},
-    {"type": "HB4", "count": 0},
-    {"type": "HB5", "count": 0},
-    {"type": "STO", "count": 0}
+  "habitation": [
+    {"building": "HB1", "count": 5},
+    {"building": "HB2", "count": 0}
+  ],
+  "storage": [
+    {"building": "STO", "count": 2, "capacity": 1000}
   ],
   "production": [
-    {"building_type": "FP", "recipe": "RAT:FP", "count": 11},
-    {"building_type": "FP", "recipe": "COF:FP", "count": 1}
+    {
+      "recipe": "1xGRN 1xALG 1xVEG=>10xRAT",
+      "count": 11,
+      "efficiency": 1.33
+    },
+    {
+      "recipe": "1xH2O 4xCOF=>4xKOM",
+      "count": 1,
+      "efficiency": 1.33
+    }
   ],
   "notes": "Primary consumables production base",
   "created_at": "2025-01-15T10:30:00Z",
@@ -47,23 +54,45 @@ Add persistent storage for base plan configurations to prun-mcp server. Allows s
 
 | Field | Required | Notes |
 |-------|----------|-------|
-| name | Yes | Primary key, unique identifier |
+| name | Yes | Unique identifier (LLM-facing); implementation may use UUID internally |
 | planet | Yes | Planet ID (e.g., "KW-020c") |
 | planet_name | No | Human-readable name for convenience |
 | cogc_program | No | Active COGC program if any |
-| experts | No | Expert allocation, defaults to all zeros |
-| infrastructure | Yes | Non-production buildings (HABs, STO) |
-| production | Yes | Recipe assignments with counts |
+| expertise | No | Expert allocation using game conventions, defaults to all zeros |
+| habitation | Yes | Habitation buildings (HB1-HB5) with counts |
+| storage | No | Storage buildings with capacity tracking |
+| production | Yes | Recipe assignments with counts and efficiency |
 | notes | No | Freeform text for human context |
 | created_at | Auto | Set on creation |
 | updated_at | Auto | Updated on save |
 
 ### Recipe Format
 
-Recipes should use the standard prun format: `{OUTPUT}:{BUILDING}` or the full recipe ticker as used elsewhere in prun-mcp. Examples:
-- `RAT:FP` — Rations from Food Processor
-- `COF:FP` — Coffee from Food Processor
-- `SF:REF` — Steel from Refinery
+Recipes use full recipe names as returned by the FIO API and used by `calculate_permit_io`. Examples:
+- `1xGRN 1xALG 1xVEG=>10xRAT` — Rations from Food Processor
+- `1xH2O 4xCOF=>4xKOM` — Kombucha from Food Processor
+- `6xFE=>3xST` — Steel from Smelter
+
+Use `get_recipe_info` or `search_recipes` to find valid recipe names.
+
+### Expertise Format
+
+Use game conventions (PascalCase):
+- `Agriculture`
+- `Chemistry`
+- `Construction`
+- `Electronics`
+- `FoodIndustries`
+- `FuelRefining`
+- `Manufacturing`
+- `Metallurgy`
+- `ResourceExtraction`
+
+### Efficiency
+
+Efficiency is stored per-production-entry as a multiplier (e.g., `1.33` = 133%).
+
+> **Note:** Future versions may calculate efficiency from expertise + COGC program. This will be a breaking change once the efficiency formula is implemented.
 
 ## Tool Interfaces
 
@@ -77,16 +106,19 @@ name: string (required) — Plan identifier
 planet: string (required) — Planet ID
 planet_name: string (optional) — Human-readable planet name
 cogc_program: string (optional) — COGC program code
-experts: object (optional) — Expert counts by category
-infrastructure: array (required) — Infrastructure building configs (HABs, STO)
-production: array (required) — Recipe assignments
+expertise: object (optional) — Expert counts by category (PascalCase keys)
+habitation: array (required) — Habitation building configs
+storage: array (optional) — Storage building configs with capacity
+production: array (required) — Recipe assignments with efficiency
 notes: string (optional) — Freeform notes
+overwrite: boolean (optional) — Must be true to update existing plan
 ```
 
 **Behavior:**
-- If plan with `name` exists, overwrites it (updates `updated_at`)
+- If plan with `name` exists and `overwrite` is not `true`, returns error
+- If plan with `name` exists and `overwrite` is `true`, updates it (updates `updated_at`)
 - If plan doesn't exist, creates it (sets both timestamps)
-- Validates building types and recipe formats against known values
+- Validates building types and recipe formats against known values (lenient: warns but allows)
 - Returns saved plan object
 
 **Example call:**
@@ -96,11 +128,12 @@ save_base_plan(
   planet="KW-020c",
   planet_name="Milliways",
   cogc_program="FOOD",
-  experts={"food_industries": 3},
-  infrastructure=[{"type": "HB1", "count": 5}],
+  expertise={"FoodIndustries": 3},
+  habitation=[{"building": "HB1", "count": 5}],
+  storage=[{"building": "STO", "count": 2, "capacity": 1000}],
   production=[
-    {"building_type": "FP", "recipe": "RAT:FP", "count": 11},
-    {"building_type": "FP", "recipe": "COF:FP", "count": 1}
+    {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 11, "efficiency": 1.33},
+    {"recipe": "1xH2O 4xCOF=>4xKOM", "count": 1, "efficiency": 1.33}
   ],
   notes="Primary consumables production"
 )
@@ -117,7 +150,7 @@ name: string (required) — Plan identifier
 
 **Returns:**
 - Full plan object if found
-- Error/null if not found
+- Error message if not found
 
 **Example call:**
 ```
@@ -160,33 +193,38 @@ name: string (required) — Plan identifier
 delete_base_plan(name="Old Expansion Plan")
 ```
 
+### calculate_plan_io
+
+Calculates daily I/O for a saved base plan.
+
+**Parameters:**
+```
+name: string (required) — Plan identifier
+exchange: string (required) — Exchange code for pricing (e.g., "CI1")
+```
+
+**Behavior:**
+1. Loads plan via `get_base_plan(name)`
+2. Transforms plan data to `calculate_permit_io` format
+3. Calls `calculate_permit_io` with extracted data
+4. Returns enriched results
+
+**Example call:**
+```
+calculate_plan_io(name="Starbucks Bastion", exchange="CI1")
+```
+
 ## Storage Implementation
+
+### Data Directory
+
+Uses the same directory as the cache, configured via `PRUN_MCP_CACHE_DIR` environment variable (default: `cache/`).
 
 ### File Structure
 
+Single file containing all plans:
 ```
-{data_dir}/
-  base_plans/
-    starbucks_bastion.json
-    vertical_bootstrap.json
-    ...
-```
-
-### Naming Convention
-
-Filename derived from plan name:
-- Lowercase
-- Spaces → underscores
-- Strip special characters
-- Add `.json` extension
-
-Example: `"Starbucks Bastion"` → `starbucks_bastion.json`
-
-### Alternative: Single File
-
-Could also use single file with all plans:
-```
-{data_dir}/base_plans.json
+{cache_dir}/base_plans.json
 ```
 
 Containing:
@@ -199,64 +237,66 @@ Containing:
 }
 ```
 
-**Recommendation:** Start with single file for simplicity. Migrate to multi-file if plans get large or concurrent access becomes a concern.
+### File Format
+
+Human-readable JSON with indentation (2 spaces).
+
+### Concurrent Access
+
+Use atomic writes to prevent corruption:
+
+```python
+def save_plans(plans: dict, path: Path) -> None:
+    temp_path = path.with_suffix(".tmp")
+    with open(temp_path, "w", encoding="utf-8") as f:
+        json.dump(plans, f, indent=2)
+    temp_path.rename(path)  # Atomic on POSIX
+```
+
+This is sufficient for typical MCP usage where tool calls are sequential within a session. If concurrent access becomes a concern, consider file locking or migration to SQLite.
 
 ## Integration with calculate_permit_io
 
-### Current State
+### Approach
 
-`calculate_permit_io` accepts recipe/count inputs directly. User must provide these manually each time.
+Use a wrapper tool (`calculate_plan_io`) rather than modifying `calculate_permit_io`. This:
+- Keeps tools focused and single-purpose
+- Easier to test independently
+- Doesn't risk breaking existing tool behavior
 
-### Future State
+### Data Transformation
 
-Two integration options:
+`calculate_plan_io` transforms stored plan format to `calculate_permit_io` input:
 
-**Option A: Wrapper Tool**
-
-New tool `calculate_plan_io(plan_name)` that:
-1. Calls `get_base_plan(plan_name)`
-2. Extracts production recipes
-3. Calls `calculate_permit_io` with extracted data
-4. Returns enriched results (can include expert bonuses, COGC effects)
-
-**Option B: Parameter Enhancement**
-
-Modify `calculate_permit_io` to accept optional `plan_name` parameter:
-- If provided, loads plan and uses its production config
-- If not provided, works as today
-
-**Recommendation:** Option A — keeps tools focused, easier to test, doesn't risk breaking existing tool.
+| Plan Field | Permit I/O Field |
+|------------|------------------|
+| `production[].recipe` | `production[].recipe` |
+| `production[].count` | `production[].count` |
+| `production[].efficiency` | `production[].efficiency` |
+| `habitation[].building` | `habitation[].building` |
+| `habitation[].count` | `habitation[].count` |
 
 ## Validation Rules
 
 ### On Save
 
 1. `name` must be non-empty string
-2. `planet` must be valid planet ID (optional: validate against known planets)
-3. `infrastructure[].type` must be valid infrastructure type (HB1-HB5, STO)
-4. `infrastructure[].count` must be non-negative integer
-5. `production[].building_type` must be valid building ticker
-6. `production[].recipe` must be valid recipe format
-7. `production[].count` must be positive integer
-8. `experts` keys must be valid expert categories
-9. `experts` values must be non-negative integers, likely max 5 each
+2. `planet` must be non-empty string
+3. `habitation[].building` must be valid habitation type (HB1-HB5)
+4. `habitation[].count` must be non-negative integer
+5. `storage[].building` must be valid storage type (STO)
+6. `storage[].count` must be non-negative integer
+7. `storage[].capacity` must be positive integer
+8. `production[].recipe` should be valid recipe format (warn if unknown)
+9. `production[].count` must be positive integer
+10. `production[].efficiency` must be positive number
+11. `expertise` keys must be valid expertise categories (PascalCase)
+12. `expertise` values must be non-negative integers (max 5 each)
 
-### Strict vs Lenient
+### Validation Mode
 
 Start lenient — warn on unknown values but allow save. Can tighten later once patterns are established.
 
-## Future Enhancements (Out of Scope for V1)
+## Multi-Plan Operations
 
-- Diff two plans
-- Clone/copy plan
-- Plan versioning / history
-- Import from live base data
-- Export to PrunPlanner format
-- Workforce calculations from infrastructure
-- Area calculations
-- Cost projections
-
-## Open Questions
-
-1. Should experts be stored as object or array format?
-2. Any other infrastructure building types beyond HB1-HB5 and STO to consider?
+Base plans are independent entities. They do not reference each other.
