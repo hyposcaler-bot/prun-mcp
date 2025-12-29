@@ -54,34 +54,24 @@ def get_version() -> str:
     Returns:
         Server version string.
     """
-    # Get package version (from setuptools-scm at build time)
-    version = pkg_version("prun-mcp")
-
-    # Check if this looks like a release version (no .dev or +)
-    is_release = ".dev" not in version and "+" not in version
-
-    if is_release:
-        return version
-
-    # For dev builds, try to get more detailed info
     # First check environment variables (set in Docker builds)
     branch = os.environ.get("PRUN_MCP_GIT_BRANCH")
     commit = os.environ.get("PRUN_MCP_GIT_COMMIT")
 
-    # Fall back to git commands if env vars not present
-    if not branch or not commit:
+    # Fall back to git commands for local dev
+    if not branch or not commit or branch == "unknown":
         git_info = _get_git_info()
-        branch = branch or git_info["branch"]
-        commit = commit or git_info["commit"]
+        branch = git_info["branch"] or branch
+        commit = git_info["commit"] or commit
 
-    # Format version string
-    if branch and commit:
-        return f"{branch}@{commit}"
-    elif commit:
-        return f"dev@{commit}"
-    else:
-        # Fall back to package version
-        return version
+    # If we have git info, return branch@commit
+    if branch and commit and branch != "unknown":
+        # Shorten commit if it's a full SHA
+        short_commit = commit[:7] if len(commit) > 7 else commit
+        return f"{branch}@{short_commit}"
+
+    # Fall back to package version
+    return pkg_version("prun-mcp")
 
 
 @mcp.tool()

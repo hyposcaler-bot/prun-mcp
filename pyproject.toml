@@ -1,6 +1,6 @@
 [project]
 name = "prun-mcp"
-dynamic = ["version"]
+version = "0.1.0"
 description = "MCP server for Prosperous Universe game data via FIO API"
 readme = "README.md"
 authors = [
@@ -17,13 +17,8 @@ dependencies = [
 prun-mcp = "prun_mcp.server:main"
 
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools_scm]
-
-[tool.setuptools.packages.find]
-where = ["src"]
+requires = ["uv_build>=0.7.5,<0.8"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
