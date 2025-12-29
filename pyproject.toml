@@ -1,6 +1,6 @@
 [project]
 name = "prun-mcp"
-version = "0.1.1"
+version = "0.2.0"
 description = "MCP server for Prosperous Universe game data via FIO API"
 readme = "README.md"
 authors = [
