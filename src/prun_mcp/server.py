@@ -16,6 +16,7 @@ logging.basicConfig(
 # Import mcp instance and tools to register them
 from prun_mcp.app import mcp  # noqa: E402
 from prun_mcp.fio import get_fio_client  # noqa: E402
+from prun_mcp.tools import base_plans  # noqa: F401, E402
 from prun_mcp.tools import building_cost  # noqa: F401, E402
 from prun_mcp.tools import buildings  # noqa: F401, E402
 from prun_mcp.tools import cogm  # noqa: F401, E402

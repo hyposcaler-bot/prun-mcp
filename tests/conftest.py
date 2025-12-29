@@ -649,3 +649,26 @@ SAMPLE_MATERIALS_EXTENDED = [
         "Volume": 0.1,
     },
 ]
+
+# Sample base plan for testing
+SAMPLE_BASE_PLAN = {
+    "name": "Test Plan",
+    "planet": "KW-020c",
+    "planet_name": "Milliways",
+    "cogc_program": "FOOD",
+    "expertise": {"FoodIndustries": 3},
+    "habitation": [{"building": "HB1", "count": 5}],
+    "storage": [{"building": "STO", "count": 2, "capacity": 1000}],
+    "production": [
+        {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 11, "efficiency": 1.33}
+    ],
+    "notes": "Test plan for unit tests",
+}
+
+# Minimal valid base plan (only required fields)
+SAMPLE_BASE_PLAN_MINIMAL = {
+    "name": "Minimal Plan",
+    "planet": "XK-745b",
+    "habitation": [{"building": "HB1", "count": 1}],
+    "production": [{"recipe": "1xH2O=>4xGRN", "count": 1, "efficiency": 1.0}],
+}
