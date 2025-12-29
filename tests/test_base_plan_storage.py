@@ -350,3 +350,88 @@ class TestValidationEdgeCases:
         errors, warnings = validate_base_plan(plan)
 
         assert any("capacity" in e for e in errors)
+
+
+class TestExtractionValidation:
+    """Tests for extraction validation."""
+
+    def test_valid_extraction_no_errors(self) -> None:
+        """Valid extraction produces no errors."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [
+            {"building": "EXT", "resource": "FEO", "count": 3, "efficiency": 1.4}
+        ]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert errors == []
+
+    def test_extraction_missing_building_error(self) -> None:
+        """Missing extraction building produces error."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [{"resource": "FEO", "count": 3}]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert any("building" in e for e in errors)
+
+    def test_extraction_unknown_building_warning(self) -> None:
+        """Unknown extraction building produces warning."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [
+            {"building": "UNKNOWN", "resource": "FEO", "count": 3, "efficiency": 1.0}
+        ]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert errors == []
+        assert any("UNKNOWN" in w for w in warnings)
+
+    def test_extraction_missing_resource_error(self) -> None:
+        """Missing extraction resource produces error."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [{"building": "EXT", "count": 3}]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert any("resource" in e for e in errors)
+
+    def test_extraction_missing_count_error(self) -> None:
+        """Missing extraction count produces error."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [{"building": "EXT", "resource": "FEO"}]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert any("count" in e for e in errors)
+
+    def test_extraction_invalid_count_error(self) -> None:
+        """Invalid extraction count produces error."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [
+            {"building": "EXT", "resource": "FEO", "count": 0, "efficiency": 1.0}
+        ]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert any("count" in e and "positive" in e for e in errors)
+
+    def test_extraction_invalid_efficiency_error(self) -> None:
+        """Invalid extraction efficiency produces error."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [
+            {"building": "EXT", "resource": "FEO", "count": 1, "efficiency": -1.0}
+        ]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert any("efficiency" in e for e in errors)
+
+    def test_extraction_efficiency_optional(self) -> None:
+        """Extraction efficiency is optional (defaults to 1.0)."""
+        plan: dict[str, Any] = dict(SAMPLE_BASE_PLAN)
+        plan["extraction"] = [{"building": "EXT", "resource": "FEO", "count": 1}]
+
+        errors, warnings = validate_base_plan(plan)
+
+        assert errors == []

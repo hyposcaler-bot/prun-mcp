@@ -8,9 +8,15 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import BuildingsCache, RecipesCache, WorkforceCache
-from prun_mcp.fio import FIOApiError, get_fio_client
+from prun_mcp.cache import BuildingsCache, MaterialsCache, RecipesCache, WorkforceCache
+from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 from prun_mcp.resources.exchanges import VALID_EXCHANGES
+from prun_mcp.resources.extraction import (
+    EXTRACTION_BUILDINGS,
+    VALID_EXTRACTION_BUILDINGS,
+    calculate_extraction_output,
+    get_building_for_resource_type,
+)
 from prun_mcp.resources.workforce import HABITATION_CAPACITY, WORKFORCE_TYPES
 from prun_mcp.utils import fetch_prices, prettify_names
 
@@ -38,6 +44,7 @@ def calculate_area_limit(permits: int) -> int:
 _buildings_cache: BuildingsCache | None = None
 _recipes_cache: RecipesCache | None = None
 _workforce_cache: WorkforceCache | None = None
+_materials_cache: MaterialsCache | None = None
 
 
 def get_buildings_cache() -> BuildingsCache:
@@ -62,6 +69,14 @@ def get_workforce_cache() -> WorkforceCache:
     if _workforce_cache is None:
         _workforce_cache = WorkforceCache()
     return _workforce_cache
+
+
+def get_materials_cache() -> MaterialsCache:
+    """Get or create the shared materials cache."""
+    global _materials_cache
+    if _materials_cache is None:
+        _materials_cache = MaterialsCache()
+    return _materials_cache
 
 
 async def _ensure_caches_populated() -> None:
@@ -98,6 +113,8 @@ async def calculate_permit_io(
     habitation: list[dict[str, Any]],
     exchange: str,
     permits: int = 1,
+    extraction: list[dict[str, Any]] | None = None,
+    planet: str | None = None,
 ) -> str | list[TextContent]:
     """Calculate daily material I/O for a base.
 
@@ -113,6 +130,13 @@ async def calculate_permit_io(
                   Valid: AI1, CI1, CI2, IC1, NC1, NC2.
         permits: Number of permits for this base (default: 1).
                  Area limits: 1 permit = 500, 2 = 750, 3 = 1000.
+        extraction: List of extraction operations (optional), each with:
+                   - building: Extraction building ticker (EXT, RIG, COL)
+                   - resource: Material ticker to extract (e.g., "GAL", "FEO")
+                   - count: Number of buildings
+                   - efficiency: Efficiency multiplier (default: 1.0)
+        planet: Planet identifier (required if extraction is provided).
+                Used to look up resource factors for extraction calculations.
 
     Returns:
         TOON-encoded daily I/O breakdown with:
@@ -191,6 +215,61 @@ async def calculate_permit_io(
     if permits < 1:
         return [TextContent(type="text", text="permits must be at least 1")]
 
+    # Validate extraction entries
+    if extraction:
+        if not planet:
+            return [
+                TextContent(
+                    type="text",
+                    text="planet parameter is required when extraction is provided",
+                )
+            ]
+
+        for i, entry in enumerate(extraction):
+            if "building" not in entry:
+                return [
+                    TextContent(
+                        type="text", text=f"Extraction entry {i}: missing 'building'"
+                    )
+                ]
+            building = entry["building"].upper()
+            if building not in VALID_EXTRACTION_BUILDINGS:
+                valid_list = ", ".join(sorted(VALID_EXTRACTION_BUILDINGS))
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Extraction entry {i}: unknown building '{building}'. "
+                        f"Valid: {valid_list}",
+                    )
+                ]
+            if "resource" not in entry:
+                return [
+                    TextContent(
+                        type="text", text=f"Extraction entry {i}: missing 'resource'"
+                    )
+                ]
+            if "count" not in entry:
+                return [
+                    TextContent(
+                        type="text", text=f"Extraction entry {i}: missing 'count'"
+                    )
+                ]
+            if entry["count"] < 1:
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Extraction entry {i}: count must be >= 1",
+                    )
+                ]
+            efficiency = entry.get("efficiency", 1.0)
+            if efficiency <= 0:
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Extraction entry {i}: efficiency must be > 0",
+                    )
+                ]
+
     try:
         await _ensure_caches_populated()
 
@@ -262,6 +341,86 @@ async def calculate_permit_io(
             # Track area used by production buildings
             area_cost = building.get("AreaCost", 0)
             total_area += area_cost * count
+
+        # Process extraction entries
+        extraction_errors: list[str] = []
+        if extraction and planet:
+            # Fetch planet data to get resource factors
+            client = get_fio_client()
+            materials_cache = get_materials_cache()
+
+            # Ensure materials cache is populated for MaterialId -> Ticker lookup
+            if not materials_cache.is_valid():
+                materials = await client.get_all_materials()
+                materials_cache.refresh(materials)
+
+            try:
+                planet_data = await client.get_planet(planet)
+
+                # Build ticker -> {type, factor} mapping from planet resources
+                planet_resources: dict[str, dict[str, Any]] = {}
+                for resource in planet_data.get("Resources", []):
+                    mat_id = resource.get("MaterialId", "")
+                    # Look up ticker from materials cache
+                    mat_info = materials_cache.get_material(mat_id)
+                    if mat_info:
+                        ticker = mat_info.get("Ticker", "")
+                        if ticker:
+                            planet_resources[ticker.upper()] = {
+                                "type": resource.get("ResourceType", ""),
+                                "factor": resource.get("Factor", 0.0),
+                            }
+
+                # Process each extraction entry
+                for entry in extraction:
+                    building_ticker = entry["building"].upper()
+                    resource_ticker = entry["resource"].upper()
+                    count = entry["count"]
+                    efficiency = entry.get("efficiency", 1.0)
+
+                    # Look up resource on planet
+                    if resource_ticker not in planet_resources:
+                        extraction_errors.append(
+                            f"Resource {resource_ticker} not found on planet {planet}"
+                        )
+                        continue
+
+                    resource_info = planet_resources[resource_ticker]
+                    resource_type = resource_info["type"]
+                    factor = resource_info["factor"]
+
+                    # Validate building matches resource type
+                    expected_building = get_building_for_resource_type(resource_type)
+                    if expected_building != building_ticker:
+                        extraction_errors.append(
+                            f"Building {building_ticker} cannot extract "
+                            f"{resource_type} resources (use {expected_building})"
+                        )
+                        continue
+
+                    # Calculate daily output using PCT formula
+                    daily_output = calculate_extraction_output(
+                        factor=factor,
+                        efficiency=efficiency,
+                        count=count,
+                        resource_type=resource_type,
+                    )
+
+                    # Add to material flow as output
+                    if resource_ticker not in material_flow:
+                        material_flow[resource_ticker] = {"in": 0, "out": 0}
+                    material_flow[resource_ticker]["out"] += daily_output
+
+                    # Add workforce requirements from extraction building
+                    building_spec = EXTRACTION_BUILDINGS[building_ticker]
+                    for wf_type, worker_count in building_spec["workforce"].items():
+                        total_workforce[wf_type] += worker_count * count
+
+                    # Add area cost
+                    total_area += building_spec["area"] * count
+
+            except FIONotFoundError:
+                extraction_errors.append(f"Planet not found: {planet}")
 
         # Add habitation building areas
         for entry in habitation:
@@ -394,6 +553,8 @@ async def calculate_permit_io(
 
         if errors:
             result["errors"] = errors
+        if extraction_errors:
+            result["extraction_errors"] = extraction_errors
         if missing_prices:
             result["missing_prices"] = missing_prices
 

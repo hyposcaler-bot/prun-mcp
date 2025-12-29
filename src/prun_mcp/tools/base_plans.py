@@ -35,6 +35,7 @@ async def save_base_plan(
     cogc_program: str | None = None,
     expertise: dict[str, int] | None = None,
     storage: list[dict[str, Any]] | None = None,
+    extraction: list[dict[str, Any]] | None = None,
     notes: str | None = None,
     overwrite: bool = False,
 ) -> str | list[TextContent]:
@@ -60,6 +61,11 @@ async def save_base_plan(
                 - building: Storage ticker (e.g., "STO")
                 - count: Number of buildings
                 - capacity: Storage capacity
+        extraction: Resource extraction operations (optional), each with:
+                   - building: Extraction building ticker (EXT, RIG, COL)
+                   - resource: Material ticker to extract (e.g., "GAL", "FEO")
+                   - count: Number of buildings
+                   - efficiency: Efficiency multiplier (default: 1.0)
         notes: Freeform notes (optional).
         overwrite: Must be true to update an existing plan.
 
@@ -82,6 +88,8 @@ async def save_base_plan(
         plan["expertise"] = expertise
     if storage:
         plan["storage"] = storage
+    if extraction:
+        plan["extraction"] = extraction
     if notes:
         plan["notes"] = notes
 
@@ -199,10 +207,25 @@ async def calculate_plan_io(
         for h in plan.get("habitation", [])
     ]
 
+    # Extract extraction data if present
+    extraction = None
+    if plan.get("extraction"):
+        extraction = [
+            {
+                "building": e["building"],
+                "resource": e["resource"],
+                "count": e["count"],
+                "efficiency": e.get("efficiency", 1.0),
+            }
+            for e in plan["extraction"]
+        ]
+
     # Call calculate_permit_io with extracted data
     return await calculate_permit_io(
         production=production,
         habitation=habitation,
         exchange=exchange,
         permits=1,  # Could be added to plan schema in future
+        extraction=extraction,
+        planet=plan.get("planet") if extraction else None,
     )

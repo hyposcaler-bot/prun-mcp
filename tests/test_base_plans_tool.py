@@ -348,6 +348,105 @@ class TestCalculatePlanIo:
         assert production[0]["efficiency"] == 1.0  # Default
 
 
+class TestCalculatePlanIoWithExtraction:
+    """Tests for calculate_plan_io with extraction."""
+
+    async def test_extraction_passed_to_permit_io(self, tmp_path: Path) -> None:
+        """calculate_plan_io passes extraction to calculate_permit_io."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        # Create plan with extraction
+        plan: dict[str, Any] = {
+            "name": "Extraction Plan",
+            "planet": "XK-001a",
+            "habitation": [{"building": "HB1", "count": 1}],
+            "production": [{"recipe": "1xA=>1xB", "count": 1, "efficiency": 1.0}],
+            "extraction": [
+                {"building": "EXT", "resource": "FEO", "count": 2, "efficiency": 1.4}
+            ],
+        }
+        storage._plans = {"Extraction Plan": plan}
+
+        mock_permit_io = AsyncMock(return_value="mock_result")
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
+                result = await calculate_plan_io("Extraction Plan", "CI1")
+
+        # Verify extraction was passed
+        call_kwargs = mock_permit_io.call_args.kwargs
+        extraction = call_kwargs["extraction"]
+        assert extraction is not None
+        assert len(extraction) == 1
+        assert extraction[0]["building"] == "EXT"  # type: ignore[index]
+        assert extraction[0]["resource"] == "FEO"  # type: ignore[index]
+        assert extraction[0]["count"] == 2  # type: ignore[index]
+        assert extraction[0]["efficiency"] == 1.4  # type: ignore[index]
+
+        # Verify planet was passed
+        assert call_kwargs["planet"] == "XK-001a"
+
+        assert result == "mock_result"
+
+    async def test_no_extraction_passes_none(self, tmp_path: Path) -> None:
+        """calculate_plan_io passes None for extraction if not in plan."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        plan: dict[str, Any] = {
+            "name": "No Extraction Plan",
+            "planet": "XK-001a",
+            "habitation": [{"building": "HB1", "count": 1}],
+            "production": [{"recipe": "1xA=>1xB", "count": 1, "efficiency": 1.0}],
+        }
+        storage._plans = {"No Extraction Plan": plan}
+
+        mock_permit_io = AsyncMock(return_value="mock_result")
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
+                await calculate_plan_io("No Extraction Plan", "CI1")
+
+        call_kwargs = mock_permit_io.call_args.kwargs
+        assert call_kwargs["extraction"] is None
+        assert call_kwargs["planet"] is None
+
+
+class TestSaveBasePlanWithExtraction:
+    """Tests for save_base_plan with extraction."""
+
+    async def test_save_with_extraction(self, tmp_path: Path) -> None:
+        """save_base_plan stores extraction data."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await save_base_plan(
+                name="Extraction Plan",
+                planet="XK-001a",
+                habitation=[{"building": "HB1", "count": 1}],
+                production=[{"recipe": "1xA=>1xB", "count": 1, "efficiency": 1.0}],
+                extraction=[
+                    {
+                        "building": "EXT",
+                        "resource": "FEO",
+                        "count": 2,
+                        "efficiency": 1.4,
+                    }
+                ],
+            )
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plan = decoded["plan"]  # type: ignore[index]
+        assert "extraction" in plan  # type: ignore[operator]
+        extraction = plan["extraction"]  # type: ignore[index]
+        assert len(extraction) == 1
+        assert extraction[0]["building"] == "EXT"  # type: ignore[index]
+
+
 class TestGetBasePlanStorage:
     """Tests for singleton storage access."""
 

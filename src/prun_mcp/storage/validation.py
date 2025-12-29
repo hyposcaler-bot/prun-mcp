@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from prun_mcp.resources.extraction import VALID_EXTRACTION_BUILDINGS
 from prun_mcp.resources.workforce import VALID_HABITATION
 
 # Valid expertise categories (PascalCase, matching game conventions)
@@ -157,5 +158,43 @@ def validate_base_plan(plan: dict[str, Any]) -> tuple[list[str], list[str]]:
                         f"expertise['{key}'] value {value} exceeds maximum "
                         f"({MAX_EXPERTISE_LEVEL})"
                     )
+
+    # Optional: Extraction validation
+    extraction = plan.get("extraction")
+    if extraction is not None:
+        if not isinstance(extraction, list):
+            errors.append("extraction must be a list")
+        else:
+            for i, ext in enumerate(extraction):
+                if not isinstance(ext, dict):
+                    errors.append(f"extraction[{i}] must be an object")
+                    continue
+
+                building = ext.get("building")
+                if not building:
+                    errors.append(f"extraction[{i}].building is required")
+                elif building.upper() not in VALID_EXTRACTION_BUILDINGS:
+                    warnings.append(
+                        f"extraction[{i}].building '{building}' is not a known "
+                        f"extraction building "
+                        f"(valid: {', '.join(sorted(VALID_EXTRACTION_BUILDINGS))})"
+                    )
+
+                resource = ext.get("resource")
+                if not resource or not isinstance(resource, str):
+                    errors.append(f"extraction[{i}].resource is required")
+
+                count = ext.get("count")
+                if count is None:
+                    errors.append(f"extraction[{i}].count is required")
+                elif not isinstance(count, int) or count < 1:
+                    errors.append(f"extraction[{i}].count must be a positive integer")
+
+                efficiency = ext.get("efficiency")
+                if efficiency is not None:
+                    if not isinstance(efficiency, (int, float)) or efficiency <= 0:
+                        errors.append(
+                            f"extraction[{i}].efficiency must be a positive number"
+                        )
 
     return errors, warnings
