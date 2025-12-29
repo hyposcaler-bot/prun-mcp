@@ -14,6 +14,8 @@ Calculate the daily material flow for a base, showing inputs, outputs, deltas, a
 | `habitation` | array | Yes | List of habitation buildings. Each entry: `{"building": string, "count": int}` |
 | `exchange` | string | Yes | Exchange code for pricing (e.g., "CI1"). Valid: AI1, CI1, CI2, IC1, NC1, NC2. |
 | `permits` | integer | No | Number of permits for this base (default: 1). Area limits: 1=500, 2=750, 3=1000. |
+| `extraction` | array | No | List of extraction operations. Each entry: `{"building": string, "resource": string, "count": int, "efficiency": float}` |
+| `planet` | string | No | Planet identifier (required if `extraction` is provided). Used to look up resource factors. |
 
 ### Production Entry
 
@@ -29,6 +31,26 @@ Calculate the daily material flow for a base, showing inputs, outputs, deltas, a
 |-------|------|-------------|
 | `building` | string | Habitation building ticker (HB1-HB5, HBB, HBC, HBM, HBL) |
 | `count` | integer | Number of buildings |
+
+### Extraction Entry
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `building` | string | Extraction building ticker: EXT (minerals), RIG (gas), COL (liquids) |
+| `resource` | string | Material ticker to extract (e.g., "GAL", "FEO", "H2O") |
+| `count` | integer | Number of extraction buildings |
+| `efficiency` | float | Efficiency multiplier (e.g., 1.03 for 103%). Default: 1.0 |
+
+**Extraction Formula (PCT):**
+```
+daily_output = (resource_factor × 100) × base_multiplier × efficiency × count
+```
+
+| Building | Resource Type | Base Multiplier | Pioneers | Area |
+|----------|---------------|-----------------|----------|------|
+| EXT | Mineral | 0.7 | 60 | 25 |
+| RIG | Gas/Atmospheric | 0.7 | 30 | 10 |
+| COL | Liquid | 0.6 | 50 | 15 |
 
 ### Response
 
@@ -100,6 +122,21 @@ calculate_permit_io(
   habitation=[{"building": "HB1", "count": 8}],
   exchange="CI1",
   permits=2
+)
+```
+
+**With resource extraction:**
+```json
+calculate_permit_io(
+  production=[
+    {"recipe": "1xAMM 2xGAL 3xH=>100xSF", "count": 2, "efficiency": 1.2}
+  ],
+  habitation=[{"building": "HB1", "count": 3}],
+  extraction=[
+    {"building": "EXT", "resource": "GAL", "count": 1, "efficiency": 1.03}
+  ],
+  planet="UV-351a",
+  exchange="CI1"
 )
 ```
 

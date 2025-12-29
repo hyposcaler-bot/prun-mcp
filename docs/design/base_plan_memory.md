@@ -32,6 +32,9 @@ Add persistent storage for base plan configurations to prun-mcp server. Allows s
   "storage": [
     {"building": "STO", "count": 2, "capacity": 1000}
   ],
+  "extraction": [
+    {"building": "EXT", "resource": "GAL", "count": 2, "efficiency": 1.03}
+  ],
   "production": [
     {
       "recipe": "1xGRN 1xALG 1xVEG=>10xRAT",
@@ -61,6 +64,7 @@ Add persistent storage for base plan configurations to prun-mcp server. Allows s
 | expertise | No | Expert allocation using game conventions, defaults to all zeros |
 | habitation | Yes | Habitation buildings (HB1-HB5) with counts |
 | storage | No | Storage buildings with capacity tracking |
+| extraction | No | Resource extraction operations (EXT, RIG, COL) |
 | production | Yes | Recipe assignments with counts and efficiency |
 | notes | No | Freeform text for human context |
 | created_at | Auto | Set on creation |
@@ -94,6 +98,34 @@ Efficiency is stored per-production-entry as a multiplier (e.g., `1.33` = 133%).
 
 > **Note:** Future versions may calculate efficiency from expertise + COGC program. This will be a breaking change once the efficiency formula is implemented.
 
+### Extraction Format
+
+Resource extraction operations for EXT, RIG, and COL buildings:
+
+```json
+"extraction": [
+  {"building": "EXT", "resource": "GAL", "count": 2, "efficiency": 1.03}
+]
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| building | Yes | Extraction building: EXT (minerals), RIG (gas), COL (liquids) |
+| resource | Yes | Material ticker to extract (e.g., "GAL", "FEO", "H2O") |
+| count | Yes | Number of extraction buildings |
+| efficiency | No | Efficiency multiplier (default: 1.0) |
+
+Output is auto-calculated using the PCT formula:
+```
+daily_output = (resource_factor × 100) × base_multiplier × efficiency × count
+```
+
+| Building | Resource Type | Base Multiplier | Pioneers | Area |
+|----------|---------------|-----------------|----------|------|
+| EXT | Mineral | 0.7 | 60 | 25 |
+| RIG | Gas/Atmospheric | 0.7 | 30 | 10 |
+| COL | Liquid | 0.6 | 50 | 15 |
+
 ## Tool Interfaces
 
 ### save_base_plan
@@ -109,6 +141,7 @@ cogc_program: string (optional) — COGC program code
 expertise: object (optional) — Expert counts by category (PascalCase keys)
 habitation: array (required) — Habitation building configs
 storage: array (optional) — Storage building configs with capacity
+extraction: array (optional) — Resource extraction operations (EXT, RIG, COL)
 production: array (required) — Recipe assignments with efficiency
 notes: string (optional) — Freeform notes
 overwrite: boolean (optional) — Must be true to update existing plan
@@ -131,6 +164,7 @@ save_base_plan(
   expertise={"FoodIndustries": 3},
   habitation=[{"building": "HB1", "count": 5}],
   storage=[{"building": "STO", "count": 2, "capacity": 1000}],
+  extraction=[{"building": "EXT", "resource": "GAL", "count": 2, "efficiency": 1.03}],
   production=[
     {"recipe": "1xGRN 1xALG 1xVEG=>10xRAT", "count": 11, "efficiency": 1.33},
     {"recipe": "1xH2O 4xCOF=>4xKOM", "count": 1, "efficiency": 1.33}
@@ -275,6 +309,11 @@ Use a wrapper tool (`calculate_plan_io`) rather than modifying `calculate_permit
 | `production[].efficiency` | `production[].efficiency` |
 | `habitation[].building` | `habitation[].building` |
 | `habitation[].count` | `habitation[].count` |
+| `extraction[].building` | `extraction[].building` |
+| `extraction[].resource` | `extraction[].resource` |
+| `extraction[].count` | `extraction[].count` |
+| `extraction[].efficiency` | `extraction[].efficiency` |
+| `planet` | `planet` (required if extraction present) |
 
 ## Validation Rules
 
@@ -287,11 +326,15 @@ Use a wrapper tool (`calculate_plan_io`) rather than modifying `calculate_permit
 5. `storage[].building` must be valid storage type (STO)
 6. `storage[].count` must be non-negative integer
 7. `storage[].capacity` must be positive integer
-8. `production[].recipe` should be valid recipe format (warn if unknown)
-9. `production[].count` must be positive integer
-10. `production[].efficiency` must be positive number
-11. `expertise` keys must be valid expertise categories (PascalCase)
-12. `expertise` values must be non-negative integers (max 5 each)
+8. `extraction[].building` must be valid extraction type (EXT, RIG, COL)
+9. `extraction[].resource` must be non-empty string
+10. `extraction[].count` must be positive integer
+11. `extraction[].efficiency` must be positive number (if provided)
+12. `production[].recipe` should be valid recipe format (warn if unknown)
+13. `production[].count` must be positive integer
+14. `production[].efficiency` must be positive number
+15. `expertise` keys must be valid expertise categories (PascalCase)
+16. `expertise` values must be non-negative integers (max 5 each)
 
 ### Validation Mode
 
