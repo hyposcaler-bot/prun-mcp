@@ -208,14 +208,15 @@ async def calculate_building_cost(
         # Check if soil-based agriculture building on infertile planet
         # Only FRM (Farmstead) and ORC (Orchard) need fertility
         # HYF (Hydroponics Farm) does NOT need fertility
-        fertility = planet_data.get("Fertility", -1)
-        if building_ticker in ("FRM", "ORC") and fertility <= 0:
+        # Note: negative fertility is valid (reduces efficiency), only None means infertile
+        fertility = planet_data.get("Fertility")
+        if building_ticker in ("FRM", "ORC") and fertility is None:
             return [
                 TextContent(
                     type="text",
                     text=(
-                        f"Building {building_ticker} requires fertility > 0, "
-                        f"but planet has fertility {fertility:.2f}"
+                        f"Building {building_ticker} requires a fertile planet, "
+                        f"but planet has no fertility"
                     ),
                 )
             ]
