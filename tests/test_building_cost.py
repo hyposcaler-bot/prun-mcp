@@ -136,6 +136,7 @@ SAMPLE_HOT_PLANET = {
 }
 
 # Infertile planet (for testing agriculture building error)
+# Note: None means no fertility, negative values are valid (reduced efficiency)
 SAMPLE_INFERTILE_PLANET = {
     "PlanetId": "infertile-id",
     "PlanetNaturalId": "IF-444h",
@@ -144,7 +145,7 @@ SAMPLE_INFERTILE_PLANET = {
     "Pressure": 1.0,
     "Gravity": 1.0,
     "Temperature": 20.0,
-    "Fertility": -1.0,
+    "Fertility": None,
 }
 
 
