@@ -225,7 +225,7 @@ get_price_history("RAT", "CI1", 7)
 
 ## Notes
 
-- All tools fetch fresh data on each call (no caching)
+- **Caching:** Market data is cached in-memory for 2.5 minutes to reduce API load. Repeated calls within the TTL return cached results. Historical price data (`get_price_history`, `get_price_history_summary`) is not cached.
 - Multi-ticker requests are fetched in parallel for efficiency
 - Plain text tools are designed for quick human-readable insights
 - TOON tools provide structured data for further analysis

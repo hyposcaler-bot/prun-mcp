@@ -118,7 +118,7 @@ get_exchange_all("CI1,NC1")
 
 ## Notes
 
-- Exchange data is fetched fresh on each call (no caching)
+- **Caching:** Exchange data is cached in-memory for 2.5 minutes to reduce API load. Repeated calls within the TTL return cached results.
 - Multiple tickers and exchanges are fetched in parallel for efficiency
 - Use `get_exchange_prices` when you need order book details for specific materials
 - Use `get_exchange_all` when you need an overview of all prices on exchange(s)
