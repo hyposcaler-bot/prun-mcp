@@ -100,7 +100,7 @@ def _generate_market_warnings(
 
     if bid is not None:
         bid_depth = sum(
-            o.get("ItemCount", 0) for o in buying_orders if o.get("ItemCost") == bid
+            o.get("ItemCount") or 0 for o in buying_orders if o.get("ItemCost") == bid
         )
         if 0 < bid_depth < THIN_DEPTH_THRESHOLD:
             warnings.append(
@@ -110,7 +110,7 @@ def _generate_market_warnings(
 
     if ask is not None:
         ask_depth = sum(
-            o.get("ItemCount", 0) for o in selling_orders if o.get("ItemCost") == ask
+            o.get("ItemCount") or 0 for o in selling_orders if o.get("ItemCost") == ask
         )
         if 0 < ask_depth < THIN_DEPTH_THRESHOLD:
             warnings.append(
@@ -182,12 +182,12 @@ def _format_market_summary_section(
     selling_orders = data.get("SellingOrders", [])
 
     bid_depth = (
-        sum(o.get("ItemCount", 0) for o in buying_orders if o.get("ItemCost") == bid)
+        sum(o.get("ItemCount") or 0 for o in buying_orders if o.get("ItemCost") == bid)
         if bid is not None
         else 0
     )
     ask_depth = (
-        sum(o.get("ItemCount", 0) for o in selling_orders if o.get("ItemCost") == ask)
+        sum(o.get("ItemCount") or 0 for o in selling_orders if o.get("ItemCost") == ask)
         if ask is not None
         else 0
     )
