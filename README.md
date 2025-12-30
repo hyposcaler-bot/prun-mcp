@@ -104,7 +104,7 @@ Or with Docker:
 | Market Analysis | `get_market_summary`, `analyze_fill_cost`, `get_price_history_summary`, `get_order_book_depth`, `get_price_history` | [docs/tools/market_analysis.md](docs/tools/market_analysis.md) |
 | COGM | `calculate_cogm` | [docs/tools/cogm.md](docs/tools/cogm.md) |
 | Permit I/O | `calculate_permit_io`, `calculate_building_cost` | [docs/tools/permit_io.md](docs/tools/permit_io.md) |
-| Base Plans | `save_base_plan`, `get_base_plan`, `list_base_plans`, `delete_base_plan`, `calculate_plan_io` | [docs/design/base_plan_memory.md](docs/design/base_plan_memory.md) |
+| Base Plans | `save_base_plan`, `get_base_plan`, `list_base_plans`, `delete_base_plan`, `calculate_plan_io` | [docs/tools/base_plans.md](docs/tools/base_plans.md) |
 
 ## Available Resources
 
