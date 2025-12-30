@@ -1,6 +1,7 @@
 """HTTP client for the FIO REST API."""
 
 import logging
+import time
 from typing import Any
 
 import httpx
@@ -26,9 +27,25 @@ def _log_api_error(response: httpx.Response, context: str) -> None:
 class FIOClient:
     """Async HTTP client for the FIO REST API."""
 
+    PRICE_CACHE_TTL = 150  # 2.5 minutes
+
     def __init__(self, base_url: str = FIO_BASE_URL) -> None:
         self.base_url = base_url
         self._client: httpx.AsyncClient | None = None
+        self._price_cache: dict[str, tuple[float, Any]] = {}  # key -> (timestamp, data)
+
+    def _get_cached(self, key: str) -> Any | None:
+        """Get cached value if within TTL."""
+        if key in self._price_cache:
+            ts, data = self._price_cache[key]
+            if time.time() - ts < self.PRICE_CACHE_TTL:
+                return data
+            del self._price_cache[key]
+        return None
+
+    def _set_cached(self, key: str, data: Any) -> None:
+        """Store value in cache."""
+        self._price_cache[key] = (time.time(), data)
 
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create the HTTP client."""
@@ -199,11 +216,17 @@ class FIOClient:
 
         Returns:
             Exchange data dictionary with full order book, bid/ask, supply/demand.
+            Results are cached for 2.5 minutes.
 
         Raises:
             FIONotFoundError: If the ticker/exchange combination is not found
             FIOApiError: If the API returns an error
         """
+        cache_key = f"exchange:{ticker}.{exchange}"
+        cached = self._get_cached(cache_key)
+        if cached is not None:
+            return cached
+
         client = await self._get_client()
         try:
             response = await client.get(f"/exchange/{ticker}.{exchange}")
@@ -218,7 +241,9 @@ class FIOClient:
                     status_code=response.status_code,
                 )
 
-            return response.json()
+            data = response.json()
+            self._set_cached(cache_key, data)
+            return data
 
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching exchange info")
@@ -230,10 +255,16 @@ class FIOClient:
         Returns:
             List of exchange data dictionaries with bid/ask, supply/demand
             for all materials on all exchanges (summary only, no order book).
+            Results are cached for 2.5 minutes.
 
         Raises:
             FIOApiError: If the API returns an error.
         """
+        cache_key = "exchange:all"
+        cached = self._get_cached(cache_key)
+        if cached is not None:
+            return cached
+
         client = await self._get_client()
         try:
             response = await client.get("/exchange/all")
@@ -245,7 +276,9 @@ class FIOClient:
                     status_code=response.status_code,
                 )
 
-            return response.json()
+            data = response.json()
+            self._set_cached(cache_key, data)
+            return data
 
         except httpx.HTTPError as e:
             logger.exception("HTTP error while fetching all exchange data")

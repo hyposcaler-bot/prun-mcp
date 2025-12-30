@@ -451,3 +451,130 @@ async def test_get_all_exchange_data_network_error() -> None:
             await client.get_all_exchange_data()
 
         assert "HTTP error" in str(exc_info.value)
+
+
+# ===== Price Cache Tests =====
+
+
+class TestPriceCache:
+    """Tests for in-memory price caching."""
+
+    async def test_exchange_info_cache_hit(self) -> None:
+        """Second call returns cached data without HTTP request."""
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            call_count += 1
+            return httpx.Response(200, json=SAMPLE_EXCHANGE_RAT_CI1)
+
+        transport = httpx.MockTransport(handler)
+
+        async with httpx.AsyncClient(
+            transport=transport, base_url=FIO_BASE_URL
+        ) as http_client:
+            client = FIOClient()
+            client._client = http_client
+
+            # First call - should hit the network
+            result1 = await client.get_exchange_info("RAT", "CI1")
+            assert call_count == 1
+            assert result1 == SAMPLE_EXCHANGE_RAT_CI1
+
+            # Second call - should use cache
+            result2 = await client.get_exchange_info("RAT", "CI1")
+            assert call_count == 1  # No additional HTTP call
+            assert result2 == SAMPLE_EXCHANGE_RAT_CI1
+
+    async def test_exchange_info_cache_miss_after_ttl(self) -> None:
+        """Expired cache triggers new fetch."""
+        import time
+        from unittest.mock import patch
+
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            call_count += 1
+            return httpx.Response(200, json=SAMPLE_EXCHANGE_RAT_CI1)
+
+        transport = httpx.MockTransport(handler)
+
+        async with httpx.AsyncClient(
+            transport=transport, base_url=FIO_BASE_URL
+        ) as http_client:
+            client = FIOClient()
+            client._client = http_client
+
+            # First call
+            await client.get_exchange_info("RAT", "CI1")
+            assert call_count == 1
+
+            # Simulate time passing beyond TTL
+            with patch.object(time, "time", return_value=time.time() + 200):
+                await client.get_exchange_info("RAT", "CI1")
+                assert call_count == 2  # New fetch after TTL expired
+
+    async def test_exchange_all_cache_hit(self) -> None:
+        """get_all_exchange_data caches results."""
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            call_count += 1
+            return httpx.Response(200, json=SAMPLE_EXCHANGE_ALL)
+
+        transport = httpx.MockTransport(handler)
+
+        async with httpx.AsyncClient(
+            transport=transport, base_url=FIO_BASE_URL
+        ) as http_client:
+            client = FIOClient()
+            client._client = http_client
+
+            # First call
+            result1 = await client.get_all_exchange_data()
+            assert call_count == 1
+            assert result1 == SAMPLE_EXCHANGE_ALL
+
+            # Second call - should use cache
+            result2 = await client.get_all_exchange_data()
+            assert call_count == 1  # No additional HTTP call
+            assert result2 == SAMPLE_EXCHANGE_ALL
+
+    async def test_cache_keys_are_distinct(self) -> None:
+        """Different tickers/exchanges have separate cache entries."""
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            call_count += 1
+            # Return different data based on path
+            path = request.url.path
+            data = dict(SAMPLE_EXCHANGE_RAT_CI1)
+            if "COF" in path:
+                data["MaterialTicker"] = "COF"
+            if "NC1" in path:
+                data["ExchangeCode"] = "NC1"
+            return httpx.Response(200, json=data)
+
+        transport = httpx.MockTransport(handler)
+
+        async with httpx.AsyncClient(
+            transport=transport, base_url=FIO_BASE_URL
+        ) as http_client:
+            client = FIOClient()
+            client._client = http_client
+
+            # Different ticker - separate cache
+            await client.get_exchange_info("RAT", "CI1")
+            await client.get_exchange_info("COF", "CI1")
+            assert call_count == 2
+
+            # Different exchange - separate cache
+            await client.get_exchange_info("RAT", "NC1")
+            assert call_count == 3
+
+            # Same ticker/exchange - use cache
+            await client.get_exchange_info("RAT", "CI1")
+            assert call_count == 3  # No additional call
