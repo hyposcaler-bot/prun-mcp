@@ -19,7 +19,7 @@ EXTRACTION_BUILDINGS: dict[str, dict[str, Any]] = {
     },
     "RIG": {
         "name": "Rig",
-        "resource_type": "GASEOUS",
+        "resource_type": "LIQUID",
         "base_multiplier": 0.7,
         "workforce": {"Pioneers": 30},
         "area": 10,
@@ -27,7 +27,7 @@ EXTRACTION_BUILDINGS: dict[str, dict[str, Any]] = {
     },
     "COL": {
         "name": "Collector",
-        "resource_type": "LIQUID",
+        "resource_type": "GASEOUS",
         "base_multiplier": 0.6,
         "workforce": {"Pioneers": 50},
         "area": 15,
@@ -38,9 +38,8 @@ EXTRACTION_BUILDINGS: dict[str, dict[str, Any]] = {
 # Map FIO resource types to extraction building tickers
 RESOURCE_TYPE_TO_BUILDING: dict[str, str] = {
     "MINERAL": "EXT",
-    "GASEOUS": "RIG",
-    "ATMOSPHERIC": "RIG",  # FIO uses ATMOSPHERIC for gases
-    "LIQUID": "COL",
+    "GASEOUS": "COL",
+    "LIQUID": "RIG",
 }
 
 # Valid extraction building tickers
@@ -51,7 +50,7 @@ def get_building_for_resource_type(resource_type: str) -> str | None:
     """Get the appropriate extraction building for a resource type.
 
     Args:
-        resource_type: FIO resource type (MINERAL, GASEOUS, ATMOSPHERIC, LIQUID)
+        resource_type: FIO resource type (MINERAL, GASEOUS, LIQUID)
 
     Returns:
         Building ticker (EXT, RIG, COL) or None if unknown type.
@@ -73,7 +72,7 @@ def calculate_extraction_output(
         factor: Planet resource factor (typically 0.0-1.0)
         efficiency: Efficiency multiplier (e.g., 1.4 for 140%)
         count: Number of extraction buildings
-        resource_type: FIO resource type (MINERAL, GASEOUS/ATMOSPHERIC, LIQUID)
+        resource_type: FIO resource type (MINERAL, GASEOUS, LIQUID)
 
     Returns:
         Daily output in units. Returns 0.0 if resource type is unknown.

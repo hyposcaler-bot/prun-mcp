@@ -181,7 +181,7 @@ SAMPLE_PLANET_KATOA = {
     "DistanceResults": None,
     "Resources": [
         {"MaterialId": "mat-h2o", "ResourceType": "LIQUID", "Factor": 0.65},
-        {"MaterialId": "mat-o", "ResourceType": "ATMOSPHERIC", "Factor": 0.21},
+        {"MaterialId": "mat-o", "ResourceType": "GASEOUS", "Factor": 0.21},
     ],
     "BuildRequirements": [
         {
