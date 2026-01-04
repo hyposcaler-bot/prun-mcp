@@ -206,7 +206,7 @@ class TestCalculateBuildingCost:
 
         # Check structure
         assert decoded["building"] == "FP"  # type: ignore[index]
-        assert "Promitor" in decoded["planet"]  # type: ignore[index]
+        assert decoded["planet_name"] == "Promitor"  # type: ignore[index]
         assert decoded["area"] == 12  # type: ignore[index]
         assert "rocky" in decoded["environment"]  # type: ignore[index]
 

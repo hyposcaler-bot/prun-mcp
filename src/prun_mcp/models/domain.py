@@ -4,13 +4,13 @@ These models represent the structured outputs of business logic operations.
 They are independent of both the FIO API format and MCP presentation format.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class MaterialCost(BaseModel):
     """A single material requirement with optional pricing."""
 
-    ticker: str
+    ticker: str = Field(serialization_alias="material")
     amount: int
     price: float | None = None
     cost: float | None = None
@@ -43,7 +43,7 @@ class BuildingCostResult(BaseModel):
     including base building materials and infrastructure requirements.
     """
 
-    building_ticker: str
+    building_ticker: str = Field(serialization_alias="building")
     building_name: str
     planet_name: str
     planet_id: str
@@ -53,3 +53,8 @@ class BuildingCostResult(BaseModel):
     exchange: str | None = None
     total_cost: float | None = None
     missing_prices: list[str] = Field(default_factory=list)
+
+    @field_serializer("environment")
+    def serialize_environment(self, env: EnvironmentInfo) -> str:
+        """Serialize environment as description string."""
+        return env.description
