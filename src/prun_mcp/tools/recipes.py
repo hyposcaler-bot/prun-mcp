@@ -7,31 +7,15 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import RecipesCache
+from prun_mcp.cache import (
+    ensure_buildings_cache,
+    ensure_recipes_cache,
+    get_recipes_cache,
+)
 from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.utils import prettify_names
+from prun_mcp.models.fio import FIORecipe
 
 logger = logging.getLogger(__name__)
-
-# Shared instance
-_recipes_cache: RecipesCache | None = None
-
-
-def get_recipes_cache() -> RecipesCache:
-    """Get or create the shared recipes cache."""
-    global _recipes_cache
-    if _recipes_cache is None:
-        _recipes_cache = RecipesCache()
-    return _recipes_cache
-
-
-async def _ensure_recipes_cache_populated() -> None:
-    """Ensure the recipes cache is populated and valid."""
-    cache = get_recipes_cache()
-    if not cache.is_valid():
-        client = get_fio_client()
-        recipes = await client.get_all_recipes()
-        cache.refresh(recipes)
 
 
 @mcp.tool()
@@ -46,10 +30,7 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
         TOON-encoded recipe data including building, inputs, outputs, and duration.
     """
     try:
-        await _ensure_recipes_cache_populated()
-        cache = get_recipes_cache()
-
-        # Parse comma-separated tickers
+        cache = await ensure_recipes_cache()
         tickers = [t.strip().upper() for t in ticker.split(",")]
 
         recipes: list[dict[str, Any]] = []
@@ -60,9 +41,10 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
             if not t_recipes:
                 not_found.append(t)
             else:
-                recipes.extend(t_recipes)
+                for r in t_recipes:
+                    recipe = FIORecipe.model_validate(r)
+                    recipes.append(recipe.model_dump(by_alias=True))
 
-        # Build response
         if not recipes and not_found:
             return [
                 TextContent(
@@ -75,7 +57,7 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")
@@ -103,14 +85,7 @@ async def search_recipes(
     try:
         # Validate building ticker if provided
         if building:
-            from prun_mcp.tools.buildings import get_buildings_cache
-
-            buildings_cache = get_buildings_cache()
-            if not buildings_cache.is_valid():
-                client = get_fio_client()
-                buildings_data = await client.get_all_buildings()
-                buildings_cache.refresh(buildings_data)
-
+            buildings_cache = await ensure_buildings_cache()
             building_upper = building.upper()
             if not buildings_cache.get_building(building_upper):
                 return [
@@ -120,14 +95,19 @@ async def search_recipes(
                     )
                 ]
 
-        await _ensure_recipes_cache_populated()
-        cache = get_recipes_cache()
-        recipes = cache.search_recipes(
+        cache = await ensure_recipes_cache()
+        raw_recipes = cache.search_recipes(
             building=building,
             input_tickers=input_tickers,
             output_tickers=output_tickers,
         )
-        return toon_encode(prettify_names({"recipes": recipes}))
+
+        recipes: list[dict[str, Any]] = []
+        for r in raw_recipes:
+            recipe = FIORecipe.model_validate(r)
+            recipes.append(recipe.model_dump(by_alias=True))
+
+        return toon_encode({"recipes": recipes})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")

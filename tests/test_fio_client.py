@@ -133,7 +133,7 @@ async def test_get_all_buildings_success(
         result = await client.get_all_buildings()
 
         assert result == SAMPLE_BUILDINGS
-        assert len(result) == 3
+        assert len(result) == 4
         assert result[0]["Ticker"] == "PP1"
         assert "BuildingCosts" in result[0]
         assert "Recipes" in result[0]

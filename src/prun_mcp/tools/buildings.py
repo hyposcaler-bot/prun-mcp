@@ -7,31 +7,25 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import BuildingsCache
+from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
 from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.utils import prettify_names
+from prun_mcp.models.fio import FIOBuildingFull, camel_to_title
 
 logger = logging.getLogger(__name__)
 
-# Shared instance
-_buildings_cache: BuildingsCache | None = None
+VALID_EXPERTISE = {
+    "AGRICULTURE",
+    "CHEMISTRY",
+    "CONSTRUCTION",
+    "ELECTRONICS",
+    "FOOD_INDUSTRIES",
+    "FUEL_REFINING",
+    "MANUFACTURING",
+    "METALLURGY",
+    "RESOURCE_EXTRACTION",
+}
 
-
-def get_buildings_cache() -> BuildingsCache:
-    """Get or create the shared buildings cache."""
-    global _buildings_cache
-    if _buildings_cache is None:
-        _buildings_cache = BuildingsCache()
-    return _buildings_cache
-
-
-async def _ensure_buildings_cache_populated() -> None:
-    """Ensure the buildings cache is populated and valid."""
-    cache = get_buildings_cache()
-    if not cache.is_valid():
-        client = get_fio_client()
-        buildings = await client.get_all_buildings()
-        cache.refresh(buildings)
+VALID_WORKFORCE = {"Pioneers", "Settlers", "Technicians", "Engineers", "Scientists"}
 
 
 @mcp.tool()
@@ -48,23 +42,21 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         construction costs, and workforce requirements.
     """
     try:
-        await _ensure_buildings_cache_populated()
-        cache = get_buildings_cache()
-
-        # Parse comma-separated identifiers
+        cache = await ensure_buildings_cache()
         identifiers = [t.strip() for t in ticker.split(",")]
 
-        buildings = []
-        not_found = []
+        buildings: list[dict[str, Any]] = []
+        not_found: list[str] = []
 
         for identifier in identifiers:
             data = cache.get_building(identifier)
             if data is None:
                 not_found.append(identifier)
             else:
-                buildings.append(data)
+                # Parse into Pydantic model for validation and prettification
+                building = FIOBuildingFull.model_validate(data)
+                buildings.append(building.model_dump(by_alias=True))
 
-        # Build response
         if not buildings and not_found:
             return [
                 TextContent(
@@ -76,7 +68,7 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")
@@ -107,21 +99,6 @@ async def refresh_buildings_cache() -> str:
         return f"Failed to refresh cache: {e}"
 
 
-VALID_EXPERTISE = {
-    "AGRICULTURE",
-    "CHEMISTRY",
-    "CONSTRUCTION",
-    "ELECTRONICS",
-    "FOOD_INDUSTRIES",
-    "FUEL_REFINING",
-    "MANUFACTURING",
-    "METALLURGY",
-    "RESOURCE_EXTRACTION",
-}
-
-VALID_WORKFORCE = {"Pioneers", "Settlers", "Technicians", "Engineers", "Scientists"}
-
-
 @mcp.tool()
 async def search_buildings(
     commodity_tickers: list[str] | None = None,
@@ -143,7 +120,6 @@ async def search_buildings(
         TOON-encoded list of matching buildings (Ticker and Name only).
         Use get_building_info for full details. All buildings if no filters.
     """
-    # Validate expertise
     if expertise and expertise.upper() not in VALID_EXPERTISE:
         valid_list = ", ".join(sorted(VALID_EXPERTISE))
         return [
@@ -153,7 +129,6 @@ async def search_buildings(
             )
         ]
 
-    # Validate workforce
     if workforce and workforce not in VALID_WORKFORCE:
         valid_list = ", ".join(sorted(VALID_WORKFORCE))
         return [
@@ -164,14 +139,20 @@ async def search_buildings(
         ]
 
     try:
-        await _ensure_buildings_cache_populated()
-        cache = get_buildings_cache()
+        cache = await ensure_buildings_cache()
         buildings = cache.search_buildings(
             commodity_tickers=commodity_tickers,
             expertise=expertise,
             workforce=workforce,
         )
-        return toon_encode(prettify_names({"buildings": buildings}))
+
+        # Apply name prettification directly to search results
+        result_buildings: list[dict[str, str]] = [
+            {"Ticker": b.get("Ticker", ""), "Name": camel_to_title(b.get("Name", ""))}
+            for b in buildings
+        ]
+
+        return toon_encode({"buildings": result_buildings})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")

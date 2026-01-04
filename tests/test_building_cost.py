@@ -182,10 +182,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_ROCKY_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -203,7 +206,7 @@ class TestCalculateBuildingCost:
 
         # Check structure
         assert decoded["building"] == "FP"  # type: ignore[index]
-        assert "Promitor" in decoded["planet"]  # type: ignore[index]
+        assert decoded["planet_name"] == "Promitor"  # type: ignore[index]
         assert decoded["area"] == 12  # type: ignore[index]
         assert "rocky" in decoded["environment"]  # type: ignore[index]
 
@@ -224,10 +227,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_GASEOUS_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -256,10 +262,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_COLD_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -288,10 +297,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_LOW_PRESSURE_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -320,10 +332,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_HIGH_GRAVITY_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -352,10 +367,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_LOW_GRAVITY_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -384,10 +402,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_HOT_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -416,10 +437,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_INFERTILE_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -444,6 +468,9 @@ class TestCalculateBuildingCost:
         mock_client.get_planet.return_value = SAMPLE_ROCKY_PLANET
         prices = mock_prices()
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
         ) -> dict[str, dict[str, float | None]]:
@@ -451,8 +478,8 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -506,9 +533,12 @@ class TestCalculateBuildingCost:
         """Test building not found returns error."""
         buildings_cache = create_buildings_cache(tmp_path / "buildings")
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with patch(
-            "prun_mcp.tools.building_cost.get_buildings_cache",
-            return_value=buildings_cache,
+            "prun_mcp.tools.building_cost.ensure_buildings_cache",
+            mock_ensure_cache,
         ):
             result = await calculate_building_cost(
                 building_ticker="NONEXISTENT",
@@ -527,10 +557,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.side_effect = FIONotFoundError("Planet", "FakePlanet")
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -550,23 +583,13 @@ class TestCalculateBuildingCost:
 
     async def test_api_error(self, tmp_path: Path) -> None:
         """Test API error is handled gracefully."""
-        buildings_cache = BuildingsCache(cache_dir=tmp_path / "buildings")
-        # Don't populate - will trigger API call
 
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.side_effect = FIOApiError(
-            "Server error", status_code=500
-        )
+        async def mock_ensure_cache() -> BuildingsCache:
+            raise FIOApiError("Server error", status_code=500)
 
-        with (
-            patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
-            ),
-            patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
-                return_value=mock_client,
-            ),
+        with patch(
+            "prun_mcp.tools.building_cost.ensure_buildings_cache",
+            mock_ensure_cache,
         ):
             result = await calculate_building_cost(
                 building_ticker="FP",
@@ -584,6 +607,9 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_ROCKY_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         # Only return some prices - MCG missing
         async def mock_fetch_prices(
             tickers: list[str], exchange: str
@@ -598,8 +624,8 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",
@@ -628,10 +654,13 @@ class TestCalculateBuildingCost:
         mock_client = AsyncMock()
         mock_client.get_planet.return_value = SAMPLE_ROCKY_PLANET
 
+        async def mock_ensure_cache() -> BuildingsCache:
+            return buildings_cache
+
         with (
             patch(
-                "prun_mcp.tools.building_cost.get_buildings_cache",
-                return_value=buildings_cache,
+                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                mock_ensure_cache,
             ),
             patch(
                 "prun_mcp.tools.building_cost.get_fio_client",

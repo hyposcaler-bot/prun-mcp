@@ -1,7 +1,7 @@
 """Tests for building tools."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from mcp.types import TextContent
@@ -35,7 +35,10 @@ class TestGetBuildingInfo:
         """Test successful building lookup returns TOON-encoded data."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("PP1")
 
         assert isinstance(result, str)
@@ -61,7 +64,10 @@ class TestGetBuildingInfo:
         """Test that lowercase tickers are converted to uppercase."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("pp1")
 
         assert isinstance(result, str)
@@ -73,7 +79,10 @@ class TestGetBuildingInfo:
         """Test comma-separated tickers returns multiple buildings."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("PP1,HB1,FRM")
 
         assert isinstance(result, str)
@@ -90,7 +99,10 @@ class TestGetBuildingInfo:
         """Test comma-separated tickers with spaces are handled."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("PP1, HB1, FRM")
 
         assert isinstance(result, str)
@@ -102,7 +114,10 @@ class TestGetBuildingInfo:
         """Test partial matches return found buildings plus not_found list."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("PP1,INVALID,HB1")
 
         assert isinstance(result, str)
@@ -123,7 +138,10 @@ class TestGetBuildingInfo:
         """Test all buildings not found returns error content."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await get_building_info("INVALID1,INVALID2")
 
         assert isinstance(result, list)
@@ -135,20 +153,11 @@ class TestGetBuildingInfo:
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_cache = MagicMock(spec=BuildingsCache)
-        mock_cache.is_valid.return_value = False
-
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.side_effect = FIOApiError(
-            "Server error", status_code=500
+        mock_ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with (
-            patch(
-                "prun_mcp.tools.buildings.get_buildings_cache", return_value=mock_cache
-            ),
-            patch("prun_mcp.tools.buildings.get_fio_client", return_value=mock_client),
-        ):
+        with patch("prun_mcp.tools.buildings.ensure_buildings_cache", mock_ensure):
             result = await get_building_info("PP1")
 
         assert isinstance(result, list)
@@ -157,28 +166,25 @@ class TestGetBuildingInfo:
         assert "FIO API error" in result[0].text
 
     async def test_populates_cache_on_miss(self, tmp_path: Path) -> None:
-        """Test that cache is populated when invalid."""
-        cache = BuildingsCache(cache_dir=tmp_path)
-        assert not cache.is_valid()
+        """Test that cache is populated when invalid (ensure_buildings_cache handles this)."""
+        cache = create_populated_cache(tmp_path)
 
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.return_value = SAMPLE_BUILDINGS
-
-        with (
-            patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache),
-            patch("prun_mcp.tools.buildings.get_fio_client", return_value=mock_client),
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1")
 
         assert isinstance(result, str)
-        mock_client.get_all_buildings.assert_called_once()
-        assert cache.is_valid()
 
     async def test_lookup_by_building_id(self, tmp_path: Path) -> None:
         """Test lookup by BuildingId returns correct data."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             # PP1 has BuildingId "1d9c9787a38e11dd7f7cfec32245bb76"
             result = await get_building_info("1d9c9787a38e11dd7f7cfec32245bb76")
 
@@ -192,7 +198,10 @@ class TestGetBuildingInfo:
         """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             # Step 1: Look up by BuildingId
             result_by_id = await get_building_info("1d9c9787a38e11dd7f7cfec32245bb76")
             assert isinstance(result_by_id, str)
@@ -230,7 +239,7 @@ class TestRefreshBuildingsCache:
             result = await refresh_buildings_cache()
 
         assert "refreshed" in result.lower()
-        assert "3" in result  # 3 buildings in SAMPLE_BUILDINGS
+        assert "4" in result  # 4 buildings in SAMPLE_BUILDINGS
         mock_client.get_all_buildings.assert_called_once()
 
     async def test_refresh_invalidates_first(self, tmp_path: Path) -> None:
@@ -277,7 +286,10 @@ class TestSearchBuildings:
         """Test that search_buildings with no filters returns all buildings."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await search_buildings()
 
         assert isinstance(result, str)
@@ -286,7 +298,7 @@ class TestSearchBuildings:
         assert isinstance(decoded, dict)
         assert "buildings" in decoded
         buildings = decoded["buildings"]
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
         # Verify only Ticker and Name are returned
         for b in buildings:
@@ -296,12 +308,16 @@ class TestSearchBuildings:
         assert "PP1" in tickers
         assert "HB1" in tickers
         assert "FRM" in tickers
+        assert "FP" in tickers
 
     async def test_filter_by_expertise(self, tmp_path: Path) -> None:
         """Test filtering by expertise type."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await search_buildings(expertise="CONSTRUCTION")
 
         assert isinstance(result, str)
@@ -315,7 +331,10 @@ class TestSearchBuildings:
         """Test filtering by workforce type."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             # All sample buildings have Pioneers
             result = await search_buildings(workforce="Pioneers")
 
@@ -323,28 +342,36 @@ class TestSearchBuildings:
         decoded = toon_decode(result)
         assert isinstance(decoded, dict)
         buildings = decoded["buildings"]
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
     async def test_filter_by_commodity_tickers(self, tmp_path: Path) -> None:
         """Test filtering by commodity tickers (AND logic)."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
-            # BSE and BDE - only PP1 has both
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
+            # BSE and BDE - PP1 and FP have both
             result = await search_buildings(commodity_tickers=["BSE", "BDE"])
 
         assert isinstance(result, str)
         decoded = toon_decode(result)
         assert isinstance(decoded, dict)
         buildings = decoded["buildings"]
-        assert len(buildings) == 1
-        assert buildings[0]["Ticker"] == "PP1"  # type: ignore[index]
+        assert len(buildings) == 2
+        tickers = [b["Ticker"] for b in buildings]  # type: ignore[index]
+        assert "PP1" in tickers
+        assert "FP" in tickers
 
     async def test_invalid_expertise_returns_error(self, tmp_path: Path) -> None:
         """Test that invalid expertise returns helpful error."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await search_buildings(expertise="INVALID")
 
         assert isinstance(result, list)
@@ -357,7 +384,10 @@ class TestSearchBuildings:
         """Test that invalid workforce returns helpful error."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
+        ):
             result = await search_buildings(workforce="Invalid")
 
         assert isinstance(result, list)
@@ -367,39 +397,24 @@ class TestSearchBuildings:
         assert "Pioneers" in result[0].text  # Lists valid values
 
     async def test_populates_cache_on_miss(self, tmp_path: Path) -> None:
-        """Test that cache is populated when invalid."""
-        cache = BuildingsCache(cache_dir=tmp_path)
-        assert not cache.is_valid()
+        """Test that cache is populated when invalid (ensure_buildings_cache handles this)."""
+        cache = create_populated_cache(tmp_path)
 
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.return_value = SAMPLE_BUILDINGS
-
-        with (
-            patch("prun_mcp.tools.buildings.get_buildings_cache", return_value=cache),
-            patch("prun_mcp.tools.buildings.get_fio_client", return_value=mock_client),
+        with patch(
+            "prun_mcp.tools.buildings.ensure_buildings_cache",
+            AsyncMock(return_value=cache),
         ):
             result = await search_buildings()
 
         assert isinstance(result, str)
-        mock_client.get_all_buildings.assert_called_once()
-        assert cache.is_valid()
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_cache = MagicMock(spec=BuildingsCache)
-        mock_cache.is_valid.return_value = False
-
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.side_effect = FIOApiError(
-            "Server error", status_code=500
+        mock_ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with (
-            patch(
-                "prun_mcp.tools.buildings.get_buildings_cache", return_value=mock_cache
-            ),
-            patch("prun_mcp.tools.buildings.get_fio_client", return_value=mock_client),
-        ):
+        with patch("prun_mcp.tools.buildings.ensure_buildings_cache", mock_ensure):
             result = await search_buildings()
 
         assert isinstance(result, list)

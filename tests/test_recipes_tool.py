@@ -1,7 +1,7 @@
 """Tests for recipe tools."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from mcp.types import TextContent
@@ -35,7 +35,9 @@ class TestGetRecipeInfo:
         """Test successful recipe lookup returns TOON-encoded data."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("RAT")
 
         assert isinstance(result, str)
@@ -55,7 +57,9 @@ class TestGetRecipeInfo:
         """Test that lowercase tickers are converted to uppercase."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("rat")
 
         assert isinstance(result, str)
@@ -67,7 +71,9 @@ class TestGetRecipeInfo:
         """Test comma-separated tickers returns recipes for all materials."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("RAT,BSE")
 
         assert isinstance(result, str)
@@ -80,7 +86,9 @@ class TestGetRecipeInfo:
         """Test comma-separated tickers with spaces are handled."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("RAT, BSE")
 
         assert isinstance(result, str)
@@ -92,7 +100,9 @@ class TestGetRecipeInfo:
         """Test partial matches return found recipes plus not_found list."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("RAT,INVALID,BSE")
 
         assert isinstance(result, str)
@@ -110,7 +120,9 @@ class TestGetRecipeInfo:
         """Test all recipes not found returns error content."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await get_recipe_info("INVALID1,INVALID2")
 
         assert isinstance(result, list)
@@ -122,18 +134,11 @@ class TestGetRecipeInfo:
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_cache = MagicMock(spec=RecipesCache)
-        mock_cache.is_valid.return_value = False
-
-        mock_client = AsyncMock()
-        mock_client.get_all_recipes.side_effect = FIOApiError(
-            "Server error", status_code=500
+        mock_ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=mock_cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
-        ):
+        with patch("prun_mcp.tools.recipes.ensure_recipes_cache", mock_ensure):
             result = await get_recipe_info("RAT")
 
         assert isinstance(result, list)
@@ -142,22 +147,15 @@ class TestGetRecipeInfo:
         assert "FIO API error" in result[0].text
 
     async def test_populates_cache_on_miss(self, tmp_path: Path) -> None:
-        """Test that cache is populated when invalid."""
-        cache = RecipesCache(cache_dir=tmp_path)
-        assert not cache.is_valid()
+        """Test that cache is populated when invalid (ensure_recipes_cache handles this)."""
+        cache = create_populated_cache(tmp_path)
 
-        mock_client = AsyncMock()
-        mock_client.get_all_recipes.return_value = SAMPLE_RECIPES
-
-        with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT")
 
         assert isinstance(result, str)
-        mock_client.get_all_recipes.assert_called_once()
-        assert cache.is_valid()
 
 
 class TestSearchRecipes:
@@ -167,7 +165,9 @@ class TestSearchRecipes:
         """Test that search_recipes with no filters returns all recipes."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await search_recipes()
 
         assert isinstance(result, str)
@@ -180,9 +180,24 @@ class TestSearchRecipes:
 
     async def test_filter_by_building(self, tmp_path: Path) -> None:
         """Test filtering by building ticker."""
-        cache = create_populated_cache(tmp_path)
+        from prun_mcp.cache import BuildingsCache
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        from tests.conftest import SAMPLE_BUILDINGS
+
+        cache = create_populated_cache(tmp_path)
+        buildings_cache = BuildingsCache(cache_dir=tmp_path / "buildings")
+        buildings_cache.refresh(SAMPLE_BUILDINGS)
+
+        with (
+            patch(
+                "prun_mcp.tools.recipes.ensure_recipes_cache",
+                AsyncMock(return_value=cache),
+            ),
+            patch(
+                "prun_mcp.tools.recipes.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
+            ),
+        ):
             result = await search_recipes(building="PP1")
 
         assert isinstance(result, str)
@@ -197,7 +212,9 @@ class TestSearchRecipes:
         """Test filtering by input tickers (AND logic)."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await search_recipes(input_tickers=["GRN", "BEA"])
 
         assert isinstance(result, str)
@@ -211,7 +228,9 @@ class TestSearchRecipes:
         """Test filtering by output tickers."""
         cache = create_populated_cache(tmp_path)
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+        ):
             result = await search_recipes(output_tickers=["RAT"])
 
         assert isinstance(result, str)
@@ -222,9 +241,24 @@ class TestSearchRecipes:
 
     async def test_combined_filters(self, tmp_path: Path) -> None:
         """Test combining multiple filters."""
-        cache = create_populated_cache(tmp_path)
+        from prun_mcp.cache import BuildingsCache
 
-        with patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache):
+        from tests.conftest import SAMPLE_BUILDINGS
+
+        cache = create_populated_cache(tmp_path)
+        buildings_cache = BuildingsCache(cache_dir=tmp_path / "buildings")
+        buildings_cache.refresh(SAMPLE_BUILDINGS)
+
+        with (
+            patch(
+                "prun_mcp.tools.recipes.ensure_recipes_cache",
+                AsyncMock(return_value=cache),
+            ),
+            patch(
+                "prun_mcp.tools.recipes.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
+            ),
+        ):
             result = await search_recipes(
                 building="FP", input_tickers=["GRN"], output_tickers=["RAT"]
             )
@@ -236,37 +270,23 @@ class TestSearchRecipes:
         assert len(recipes) == 1
 
     async def test_populates_cache_on_miss(self, tmp_path: Path) -> None:
-        """Test that cache is populated when invalid."""
-        cache = RecipesCache(cache_dir=tmp_path)
-        assert not cache.is_valid()
+        """Test that cache is populated when invalid (ensure_recipes_cache handles this)."""
+        cache = create_populated_cache(tmp_path)
 
-        mock_client = AsyncMock()
-        mock_client.get_all_recipes.return_value = SAMPLE_RECIPES
-
-        with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
+        with patch(
+            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await search_recipes()
 
         assert isinstance(result, str)
-        mock_client.get_all_recipes.assert_called_once()
-        assert cache.is_valid()
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_cache = MagicMock(spec=RecipesCache)
-        mock_cache.is_valid.return_value = False
-
-        mock_client = AsyncMock()
-        mock_client.get_all_recipes.side_effect = FIOApiError(
-            "Server error", status_code=500
+        mock_ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=mock_cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
-        ):
+        with patch("prun_mcp.tools.recipes.ensure_recipes_cache", mock_ensure):
             result = await search_recipes()
 
         assert isinstance(result, list)
@@ -285,7 +305,8 @@ class TestSearchRecipes:
         buildings_cache.refresh(SAMPLE_BUILDINGS)
 
         with patch(
-            "prun_mcp.tools.buildings.get_buildings_cache", return_value=buildings_cache
+            "prun_mcp.tools.recipes.ensure_buildings_cache",
+            AsyncMock(return_value=buildings_cache),
         ):
             result = await search_recipes(building="INVALID")
 

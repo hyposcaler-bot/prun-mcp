@@ -11,8 +11,7 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
-from prun_mcp.resources.exchanges import VALID_EXCHANGES
-from prun_mcp.utils import prettify_names
+from prun_mcp.prun_lib import InvalidExchangeError, validate_exchange
 
 logger = logging.getLogger(__name__)
 
@@ -252,15 +251,12 @@ async def get_market_summary(ticker: str, exchange: str) -> str | list[TextConte
         Plain text market summary with bid/ask, spread, supply/demand,
         and warnings about market conditions.
     """
-    exchange = exchange.strip().upper()
-    if exchange not in VALID_EXCHANGES:
-        valid_list = ", ".join(sorted(VALID_EXCHANGES))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
+    try:
+        validated_exchange = validate_exchange(exchange)
+    except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    assert validated_exchange is not None  # exchange is required
+    exchange = validated_exchange
 
     tickers = [t.strip().upper() for t in ticker.split(",")]
     client = get_fio_client()
@@ -462,15 +458,12 @@ async def analyze_fill_cost(
         TOON-encoded fill analysis including fills breakdown, VWAP,
         slippage, and limit price recommendations.
     """
-    exchange = exchange.strip().upper()
-    if exchange not in VALID_EXCHANGES:
-        valid_list = ", ".join(sorted(VALID_EXCHANGES))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
+    try:
+        validated_exchange = validate_exchange(exchange)
+    except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    assert validated_exchange is not None  # exchange is required
+    exchange = validated_exchange
 
     direction = direction.strip().lower()
     if direction not in ("buy", "sell"):
@@ -575,7 +568,7 @@ async def analyze_fill_cost(
         ]
         result["warnings"] = [w for w in result["warnings"] if w]
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)
 
 
 def _calculate_price_stats(candles: list[dict[str, Any]]) -> dict[str, Any]:
@@ -691,15 +684,12 @@ async def get_price_history_summary(
         Plain text historical comparison with current vs. historical
         prices, spreads, volume, and insights.
     """
-    exchange = exchange.strip().upper()
-    if exchange not in VALID_EXCHANGES:
-        valid_list = ", ".join(sorted(VALID_EXCHANGES))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
+    try:
+        validated_exchange = validate_exchange(exchange)
+    except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    assert validated_exchange is not None  # exchange is required
+    exchange = validated_exchange
 
     if days < 1 or days > 30:
         return [
@@ -887,15 +877,12 @@ async def get_order_book_depth(
         TOON-encoded order book with aggregated levels and cumulative
         calculations for cost/proceeds analysis.
     """
-    exchange = exchange.strip().upper()
-    if exchange not in VALID_EXCHANGES:
-        valid_list = ", ".join(sorted(VALID_EXCHANGES))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
+    try:
+        validated_exchange = validate_exchange(exchange)
+    except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    assert validated_exchange is not None  # exchange is required
+    exchange = validated_exchange
 
     side = side.strip().lower()
     if side not in ("buy", "sell", "both"):
@@ -1007,7 +994,7 @@ async def get_order_book_depth(
         if not_found:
             result["not_found"] = not_found
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)
 
 
 @mcp.tool()
@@ -1027,15 +1014,12 @@ async def get_price_history(
         TOON-encoded time series with daily OHLCV data and summary
         statistics for trend analysis.
     """
-    exchange = exchange.strip().upper()
-    if exchange not in VALID_EXCHANGES:
-        valid_list = ", ".join(sorted(VALID_EXCHANGES))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid exchange: {exchange}. Valid: {valid_list}",
-            )
-        ]
+    try:
+        validated_exchange = validate_exchange(exchange)
+    except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    assert validated_exchange is not None  # exchange is required
+    exchange = validated_exchange
 
     if days < 1 or days > 30:
         return [
@@ -1140,4 +1124,4 @@ async def get_price_history(
         if not_found:
             result["not_found"] = not_found
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)
