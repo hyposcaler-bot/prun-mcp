@@ -43,6 +43,48 @@ class InfertilePlanetError(BuildingCostError):
         )
 
 
+def get_required_infrastructure_materials(planet: FIOPlanet) -> set[str]:
+    """Get the set of infrastructure materials required for a planet.
+
+    This returns the material tickers that would be needed based on the
+    planet's environment, without calculating amounts. Useful for knowing
+    which prices to fetch.
+
+    Args:
+        planet: Planet data with environment information.
+
+    Returns:
+        Set of material tickers (e.g., {"MCG", "SEA", "INS"}).
+    """
+    materials: set[str] = set()
+
+    # Surface type
+    if planet.surface:
+        materials.add("MCG")
+    else:
+        materials.add("AEF")
+
+    # Pressure
+    if planet.pressure < ENV_THRESHOLDS["low_pressure"]:
+        materials.add("SEA")
+    elif planet.pressure > ENV_THRESHOLDS["high_pressure"]:
+        materials.add("HSE")
+
+    # Gravity
+    if planet.gravity < ENV_THRESHOLDS["low_gravity"]:
+        materials.add("MGC")
+    elif planet.gravity > ENV_THRESHOLDS["high_gravity"]:
+        materials.add("BL")
+
+    # Temperature
+    if planet.temperature < ENV_THRESHOLDS["cold"]:
+        materials.add("INS")
+    elif planet.temperature > ENV_THRESHOLDS["hot"]:
+        materials.add("TSH")
+
+    return materials
+
+
 def calculate_infrastructure_costs(area: int, planet: FIOPlanet) -> dict[str, int]:
     """Calculate infrastructure material costs based on planet environment.
 
