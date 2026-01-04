@@ -58,3 +58,68 @@ class BuildingCostResult(BaseModel):
     def serialize_environment(self, env: EnvironmentInfo) -> str:
         """Serialize environment as description string."""
         return env.description
+
+
+class COGMInputBreakdown(BaseModel):
+    """A single input material in COGM breakdown."""
+
+    ticker: str = Field(serialization_alias="Ticker")
+    daily_amount: float = Field(serialization_alias="DailyAmount")
+    price: float | None = Field(default=None, serialization_alias="Price")
+    daily_cost: float | None = Field(default=None, serialization_alias="DailyCost")
+
+
+class COGMConsumableBreakdown(BaseModel):
+    """A single consumable in COGM breakdown."""
+
+    ticker: str = Field(serialization_alias="Ticker")
+    workforce_type: str = Field(serialization_alias="WorkforceType")
+    daily_amount: float = Field(serialization_alias="DailyAmount")
+    price: float | str | None = Field(default=None, serialization_alias="Price")
+    daily_cost: float | None = Field(default=None, serialization_alias="DailyCost")
+    self_consumed: bool = Field(default=False, serialization_alias="SelfConsumed")
+
+
+class COGMOutput(BaseModel):
+    """COGM output information."""
+
+    ticker: str = Field(serialization_alias="Ticker")
+    daily_output: float = Field(serialization_alias="DailyOutput")
+
+
+class COGMTotals(BaseModel):
+    """COGM cost totals."""
+
+    daily_input_cost: float
+    daily_consumable_cost: float
+    daily_total_cost: float
+
+
+class COGMBreakdown(BaseModel):
+    """COGM cost breakdown."""
+
+    inputs: list[COGMInputBreakdown]
+    consumables: list[COGMConsumableBreakdown]
+
+
+class COGMSelfConsumption(BaseModel):
+    """Self-consumption information for COGM."""
+
+    consumed: dict[str, float]
+    net_output: float
+
+
+class COGMResult(BaseModel):
+    """Complete COGM calculation result."""
+
+    recipe: str
+    building: str
+    efficiency: float
+    exchange: str
+    self_consume: bool
+    output: COGMOutput
+    cogm_per_unit: float
+    breakdown: COGMBreakdown
+    totals: COGMTotals
+    self_consumption: COGMSelfConsumption | None = None
+    missing_prices: list[str] = Field(default_factory=list)
