@@ -165,6 +165,56 @@ class TestSaveBasePlan:
         assert isinstance(result[0], TextContent)
         assert "error" in result[0].text.lower()
 
+    async def test_save_with_active_true(self, tmp_path: Path) -> None:
+        """save_base_plan stores active=True correctly."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await save_base_plan(
+                name="Active Plan",
+                planet="XK-001a",
+                habitation=[{"building": "HB1", "count": 1}],
+                production=[{"recipe": "1xA=>1xB", "count": 1, "efficiency": 1.0}],
+                active=True,
+            )
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plan = decoded["plan"]  # type: ignore[index]
+        assert plan["active"] is True  # type: ignore[index]
+
+        # Verify in storage
+        retrieved = storage.get_plan("Active Plan")
+        assert retrieved is not None
+        assert retrieved["active"] is True
+
+    async def test_save_with_active_false(self, tmp_path: Path) -> None:
+        """save_base_plan stores active=False correctly (default)."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await save_base_plan(
+                name="Inactive Plan",
+                planet="XK-001a",
+                habitation=[{"building": "HB1", "count": 1}],
+                production=[{"recipe": "1xA=>1xB", "count": 1, "efficiency": 1.0}],
+                # active defaults to False
+            )
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plan = decoded["plan"]  # type: ignore[index]
+        assert plan["active"] is False  # type: ignore[index]
+
+        # Verify in storage
+        retrieved = storage.get_plan("Inactive Plan")
+        assert retrieved is not None
+        assert retrieved["active"] is False
+
 
 class TestGetBasePlan:
     """Tests for get_base_plan tool."""
@@ -234,6 +284,77 @@ class TestListBasePlans:
             assert "updated_at" in plan
             # Full data should not be in summary
             assert "production" not in plan
+
+    async def test_list_filter_active(self, tmp_path: Path) -> None:
+        """list_base_plans filters by active status."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save an active plan
+        active_plan = dict(SAMPLE_BASE_PLAN)
+        active_plan["active"] = True
+        storage.save_plan(active_plan)
+
+        # Save an inactive plan
+        inactive_plan = dict(SAMPLE_BASE_PLAN_MINIMAL)
+        inactive_plan["active"] = False
+        storage.save_plan(inactive_plan)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await list_base_plans(active=True)
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plans = decoded["plans"]  # type: ignore[index]
+        assert len(plans) == 1
+        assert plans[0]["name"] == "Test Plan"  # type: ignore[index]
+        assert plans[0]["active"] is True  # type: ignore[index]
+
+    async def test_list_filter_inactive(self, tmp_path: Path) -> None:
+        """list_base_plans filters by inactive status."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save an active plan
+        active_plan = dict(SAMPLE_BASE_PLAN)
+        active_plan["active"] = True
+        storage.save_plan(active_plan)
+
+        # Save an inactive plan
+        inactive_plan = dict(SAMPLE_BASE_PLAN_MINIMAL)
+        inactive_plan["active"] = False
+        storage.save_plan(inactive_plan)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await list_base_plans(active=False)
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plans = decoded["plans"]  # type: ignore[index]
+        assert len(plans) == 1
+        assert plans[0]["name"] == "Minimal Plan"  # type: ignore[index]
+        assert plans[0]["active"] is False  # type: ignore[index]
+
+    async def test_list_includes_active_in_summary(self, tmp_path: Path) -> None:
+        """list_base_plans includes active field in summaries."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        plan = dict(SAMPLE_BASE_PLAN)
+        plan["active"] = True
+        storage.save_plan(plan)
+
+        with patch(
+            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        ):
+            result = await list_base_plans()
+
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        plans = decoded["plans"]  # type: ignore[index]
+        assert len(plans) == 1
+        assert "active" in plans[0]  # type: ignore[operator]
+        assert plans[0]["active"] is True  # type: ignore[index]
 
 
 class TestDeleteBasePlan:

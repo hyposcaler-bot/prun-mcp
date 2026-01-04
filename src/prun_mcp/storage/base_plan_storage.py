@@ -86,14 +86,20 @@ class BasePlanStorage:
         assert self._plans is not None
         return self._plans.get(name)
 
-    def list_plans(self) -> list[dict[str, Any]]:
+    def list_plans(self, active: bool | None = None) -> list[dict[str, Any]]:
         """List all plans with summary information.
+
+        Args:
+            active: Filter by active status. If None, returns all plans.
+                   If True, returns only active plans.
+                   If False, returns only inactive plans.
 
         Returns:
             List of plan summaries containing:
             - name
             - planet
             - planet_name (if set)
+            - active
             - updated_at
         """
         self._ensure_loaded()
@@ -101,9 +107,15 @@ class BasePlanStorage:
 
         summaries = []
         for name, plan in self._plans.items():
+            plan_active = plan.get("active", False)
+            # Filter by active status if specified
+            if active is not None and plan_active != active:
+                continue
+
             summary: dict[str, Any] = {
                 "name": name,
                 "planet": plan.get("planet", ""),
+                "active": plan_active,
                 "updated_at": plan.get("updated_at", ""),
             }
             if plan.get("planet_name"):

@@ -37,6 +37,7 @@ async def save_base_plan(
     storage: list[dict[str, Any]] | None = None,
     extraction: list[dict[str, Any]] | None = None,
     notes: str | None = None,
+    active: bool = False,
     overwrite: bool = False,
 ) -> str | list[TextContent]:
     """Creates or updates a base plan.
@@ -67,6 +68,9 @@ async def save_base_plan(
                    - count: Number of buildings
                    - efficiency: Efficiency multiplier (default: 1.0)
         notes: Freeform notes (optional).
+        active: Whether the plan represents an active in-game base (default: False).
+                Active plans represent real bases/permits; inactive plans are for
+                planning or reference only.
         overwrite: Must be true to update an existing plan.
 
     Returns:
@@ -78,6 +82,7 @@ async def save_base_plan(
         "planet": planet,
         "habitation": habitation,
         "production": production,
+        "active": active,
     }
 
     if planet_name:
@@ -128,18 +133,25 @@ async def get_base_plan(name: str) -> str | list[TextContent]:
 
 
 @mcp.tool()
-async def list_base_plans() -> str:
+async def list_base_plans(active: bool | None = None) -> str:
     """Lists all stored base plans.
+
+    Args:
+        active: Filter by active status (optional).
+                If None, returns all plans.
+                If True, returns only active plans (real in-game bases).
+                If False, returns only inactive plans (planning/reference).
 
     Returns:
         TOON-encoded array of plan summaries containing:
         - name: Plan identifier
         - planet: Planet ID
         - planet_name: Human-readable name (if set)
+        - active: Whether the plan is active
         - updated_at: Last update timestamp
     """
     storage_instance = get_base_plan_storage()
-    plans = storage_instance.list_plans()
+    plans = storage_instance.list_plans(active=active)
 
     return toon_encode({"plans": plans})
 

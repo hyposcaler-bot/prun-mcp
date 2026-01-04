@@ -176,6 +176,127 @@ class TestBasePlanStorage:
         assert "  " in content  # 2-space indent
 
 
+class TestActiveField:
+    """Tests for the active field in base plans."""
+
+    def test_save_plan_with_active_true(self, tmp_path: Path) -> None:
+        """Saving with active=True preserves the field."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        plan = dict(SAMPLE_BASE_PLAN)
+        plan["active"] = True
+
+        saved, _ = storage.save_plan(plan)
+
+        assert saved["active"] is True
+        retrieved = storage.get_plan("Test Plan")
+        assert retrieved is not None
+        assert retrieved["active"] is True
+
+    def test_save_plan_with_active_false(self, tmp_path: Path) -> None:
+        """Saving with active=False preserves the field."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        plan = dict(SAMPLE_BASE_PLAN)
+        plan["active"] = False
+
+        saved, _ = storage.save_plan(plan)
+
+        assert saved["active"] is False
+        retrieved = storage.get_plan("Test Plan")
+        assert retrieved is not None
+        assert retrieved["active"] is False
+
+    def test_list_plans_includes_active_in_summary(self, tmp_path: Path) -> None:
+        """list_plans includes active field in summaries."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+        plan = dict(SAMPLE_BASE_PLAN)
+        plan["active"] = True
+        storage.save_plan(plan)
+
+        plans = storage.list_plans()
+
+        assert len(plans) == 1
+        assert "active" in plans[0]
+        assert plans[0]["active"] is True
+
+    def test_list_plans_filter_active_only(self, tmp_path: Path) -> None:
+        """Filter returns only active plans."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save an active plan
+        active_plan = dict(SAMPLE_BASE_PLAN)
+        active_plan["active"] = True
+        storage.save_plan(active_plan)
+
+        # Save an inactive plan
+        inactive_plan = dict(SAMPLE_BASE_PLAN_MINIMAL)
+        inactive_plan["active"] = False
+        storage.save_plan(inactive_plan)
+
+        plans = storage.list_plans(active=True)
+
+        assert len(plans) == 1
+        assert plans[0]["name"] == "Test Plan"
+        assert plans[0]["active"] is True
+
+    def test_list_plans_filter_inactive_only(self, tmp_path: Path) -> None:
+        """Filter returns only inactive plans."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save an active plan
+        active_plan = dict(SAMPLE_BASE_PLAN)
+        active_plan["active"] = True
+        storage.save_plan(active_plan)
+
+        # Save an inactive plan
+        inactive_plan = dict(SAMPLE_BASE_PLAN_MINIMAL)
+        inactive_plan["active"] = False
+        storage.save_plan(inactive_plan)
+
+        plans = storage.list_plans(active=False)
+
+        assert len(plans) == 1
+        assert plans[0]["name"] == "Minimal Plan"
+        assert plans[0]["active"] is False
+
+    def test_list_plans_no_filter_returns_all(self, tmp_path: Path) -> None:
+        """No filter returns all plans."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save an active plan
+        active_plan = dict(SAMPLE_BASE_PLAN)
+        active_plan["active"] = True
+        storage.save_plan(active_plan)
+
+        # Save an inactive plan
+        inactive_plan = dict(SAMPLE_BASE_PLAN_MINIMAL)
+        inactive_plan["active"] = False
+        storage.save_plan(inactive_plan)
+
+        plans = storage.list_plans()
+
+        assert len(plans) == 2
+        names = {p["name"] for p in plans}
+        assert names == {"Test Plan", "Minimal Plan"}
+
+    def test_list_plans_missing_active_treated_as_false(self, tmp_path: Path) -> None:
+        """Plans without active field are treated as inactive."""
+        storage = BasePlanStorage(storage_dir=tmp_path)
+
+        # Save a plan without active field (legacy plan)
+        plan = dict(SAMPLE_BASE_PLAN)
+        # Don't set active field
+        storage.save_plan(plan)
+
+        # Filter for active plans should return nothing
+        active_plans = storage.list_plans(active=True)
+        assert len(active_plans) == 0
+
+        # Filter for inactive plans should return the plan
+        inactive_plans = storage.list_plans(active=False)
+        assert len(inactive_plans) == 1
+        assert inactive_plans[0]["active"] is False
+
+
 class TestValidation:
     """Tests for validate_base_plan function."""
 
