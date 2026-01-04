@@ -9,7 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import ensure_materials_cache, get_materials_cache
 from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.utils import prettify_names
+from prun_mcp.models.fio import FIOMaterial
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +30,17 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
         cache = await ensure_materials_cache()
         identifiers = [t.strip() for t in ticker.split(",")]
 
-        materials = []
-        not_found = []
+        materials: list[dict[str, Any]] = []
+        not_found: list[str] = []
 
         for identifier in identifiers:
             data = cache.get_material(identifier)
             if data is None:
                 not_found.append(identifier)
             else:
-                materials.append(data)
+                # Parse into Pydantic model for validation and prettification
+                material = FIOMaterial.model_validate(data)
+                materials.append(material.model_dump(by_alias=True))
 
         if not materials and not_found:
             return [
@@ -51,7 +53,7 @@ async def get_material_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching materials")
@@ -91,8 +93,15 @@ async def get_all_materials() -> str | list[TextContent]:
     """
     try:
         cache = await ensure_materials_cache()
-        materials = cache.get_all_materials()
-        return toon_encode(prettify_names({"materials": materials}))
+        all_materials = cache.get_all_materials()
+
+        # Parse each material for validation and prettification
+        materials: list[dict[str, Any]] = []
+        for m in all_materials:
+            material = FIOMaterial.model_validate(m)
+            materials.append(material.model_dump(by_alias=True))
+
+        return toon_encode({"materials": materials})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching materials")

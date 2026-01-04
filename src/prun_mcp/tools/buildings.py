@@ -9,7 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
 from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.utils import prettify_names
+from prun_mcp.models.fio import FIOBuildingFull
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +45,17 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         cache = await ensure_buildings_cache()
         identifiers = [t.strip() for t in ticker.split(",")]
 
-        buildings = []
-        not_found = []
+        buildings: list[dict[str, Any]] = []
+        not_found: list[str] = []
 
         for identifier in identifiers:
             data = cache.get_building(identifier)
             if data is None:
                 not_found.append(identifier)
             else:
-                buildings.append(data)
+                # Parse into Pydantic model for validation and prettification
+                building = FIOBuildingFull.model_validate(data)
+                buildings.append(building.model_dump(by_alias=True))
 
         if not buildings and not_found:
             return [
@@ -66,7 +68,7 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         if not_found:
             result["not_found"] = not_found
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")
@@ -143,7 +145,23 @@ async def search_buildings(
             expertise=expertise,
             workforce=workforce,
         )
-        return toon_encode(prettify_names({"buildings": buildings}))
+
+        # Search results only have Ticker and Name - get full data for prettification
+        result_buildings: list[dict[str, str]] = []
+        for b in buildings:
+            ticker = b.get("Ticker", "")
+            # Get full building data for name prettification
+            full_data = cache.get_building(ticker)
+            if full_data:
+                building = FIOBuildingFull.model_validate(full_data)
+                result_buildings.append(
+                    {"Ticker": building.ticker, "Name": building.name}
+                )
+            else:
+                # Fallback if full data not available
+                result_buildings.append({"Ticker": ticker, "Name": b.get("Name", "")})
+
+        return toon_encode({"buildings": result_buildings})
 
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")

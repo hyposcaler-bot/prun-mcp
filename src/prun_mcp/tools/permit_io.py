@@ -22,7 +22,7 @@ from prun_mcp.resources.extraction import (
     get_building_for_resource_type,
 )
 from prun_mcp.resources.workforce import HABITATION_CAPACITY, WORKFORCE_TYPES
-from prun_mcp.utils import fetch_prices, prettify_names
+from prun_mcp.utils import fetch_prices
 
 logger = logging.getLogger(__name__)
 
@@ -428,7 +428,7 @@ async def calculate_permit_io(
         if missing_prices:
             result["missing_prices"] = missing_prices
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while calculating base I/O")

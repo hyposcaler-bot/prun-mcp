@@ -12,7 +12,6 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
 from prun_mcp.prun_lib import InvalidExchangeError, validate_exchange
-from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
 
@@ -569,7 +568,7 @@ async def analyze_fill_cost(
         ]
         result["warnings"] = [w for w in result["warnings"] if w]
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)
 
 
 def _calculate_price_stats(candles: list[dict[str, Any]]) -> dict[str, Any]:
@@ -995,7 +994,7 @@ async def get_order_book_depth(
         if not_found:
             result["not_found"] = not_found
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)
 
 
 @mcp.tool()
@@ -1125,4 +1124,4 @@ async def get_price_history(
         if not_found:
             result["not_found"] = not_found
 
-    return toon_encode(prettify_names(result))
+    return toon_encode(result)

@@ -15,7 +15,7 @@ from prun_mcp.cache import (
 from prun_mcp.fio import FIOApiError
 from prun_mcp.prun_lib import InvalidExchangeError, validate_exchange
 from prun_mcp.resources.workforce import WORKFORCE_TYPES
-from prun_mcp.utils import fetch_prices, prettify_names
+from prun_mcp.utils import fetch_prices
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +246,7 @@ async def calculate_cogm(
         if missing_prices:
             result["missing_prices"] = missing_prices
 
-        return toon_encode(prettify_names(result))
+        return toon_encode(result)
 
     except FIOApiError as e:
         logger.exception("FIO API error while calculating COGM")
