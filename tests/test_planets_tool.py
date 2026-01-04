@@ -34,7 +34,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("Katoa")
@@ -63,7 +64,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("XK-745b")
@@ -82,7 +84,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("Katoa,Montem")
@@ -107,7 +110,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("Katoa, Montem")
@@ -132,7 +136,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("Katoa,INVALID,Montem")
@@ -165,7 +170,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("INVALID1,INVALID2")
@@ -190,7 +196,8 @@ class TestGetPlanetInfo:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await get_planet_info("Katoa")
@@ -217,7 +224,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(include_resources="FEO")
@@ -240,7 +248,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(include_resources="FEO,LST")
@@ -262,7 +271,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             # Exclude H2O - should filter out Promitor and Berthier
@@ -288,7 +298,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(limit=1)
@@ -311,7 +322,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(top_resources=2, limit=1)
@@ -336,7 +348,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(limit=1)
@@ -406,7 +419,8 @@ class TestSearchPlanets:
         with (
             patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets._get_materials_cache", return_value=mock_cache
+                "prun_mcp.tools.planets.ensure_materials_cache",
+                AsyncMock(return_value=mock_cache),
             ),
         ):
             result = await search_planets(limit=1)

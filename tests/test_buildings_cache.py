@@ -22,7 +22,7 @@ class TestBuildingsCache:
         cache.refresh(SAMPLE_BUILDINGS)
 
         assert cache.is_valid()
-        assert cache.building_count() == 3
+        assert cache.building_count() == 4
 
     def test_get_building_returns_full_data(self, tmp_path: Path) -> None:
         """Test that get_building returns data with costs, recipes, and workforce."""
@@ -136,7 +136,7 @@ class TestBuildingsCache:
         assert cache2._buildings is None  # Not loaded yet
 
         count = cache2.building_count()
-        assert count == 3
+        assert count == 4
         assert cache2._buildings is not None  # Now loaded
 
     def test_search_buildings_no_filters(self, tmp_path: Path) -> None:
@@ -146,7 +146,7 @@ class TestBuildingsCache:
 
         buildings = cache.search_buildings()
         assert isinstance(buildings, list)
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
         # Verify only Ticker and Name are returned
         for b in buildings:
@@ -156,6 +156,7 @@ class TestBuildingsCache:
         assert "PP1" in tickers
         assert "HB1" in tickers
         assert "FRM" in tickers
+        assert "FP" in tickers
 
     def test_search_buildings_empty_cache(self, tmp_path: Path) -> None:
         """Test that search_buildings returns empty list when cache is invalid."""
@@ -195,7 +196,7 @@ class TestBuildingsCache:
 
         # All buildings have Pioneers > 0
         buildings = cache.search_buildings(workforce="Pioneers")
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
         # No buildings have Settlers > 0
         buildings = cache.search_buildings(workforce="Settlers")
@@ -206,18 +207,20 @@ class TestBuildingsCache:
         cache = BuildingsCache(cache_dir=tmp_path)
         cache.refresh(SAMPLE_BUILDINGS)
 
-        # Filter by BSE - all 3 buildings use it
+        # Filter by BSE - all 4 buildings use it
         buildings = cache.search_buildings(commodity_tickers=["BSE"])
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
-        # Filter by BSE and BBH - all 3 buildings use both
+        # Filter by BSE and BBH - all 4 buildings use both
         buildings = cache.search_buildings(commodity_tickers=["BSE", "BBH"])
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
-        # Filter by BSE and BDE - only PP1 has both
+        # Filter by BSE and BDE - PP1 and FP have both
         buildings = cache.search_buildings(commodity_tickers=["BSE", "BDE"])
-        assert len(buildings) == 1
-        assert buildings[0]["Ticker"] == "PP1"
+        assert len(buildings) == 2
+        tickers = [b["Ticker"] for b in buildings]
+        assert "PP1" in tickers
+        assert "FP" in tickers
 
     def test_search_buildings_commodity_tickers_case_insensitive(
         self, tmp_path: Path
@@ -227,7 +230,7 @@ class TestBuildingsCache:
         cache.refresh(SAMPLE_BUILDINGS)
 
         buildings = cache.search_buildings(commodity_tickers=["bse"])
-        assert len(buildings) == 3
+        assert len(buildings) == 4
 
     def test_search_buildings_combined_filters(self, tmp_path: Path) -> None:
         """Test combining multiple filters (AND logic)."""
@@ -258,7 +261,7 @@ class TestBuildingsCache:
         assert cache2._buildings is None  # Not loaded yet
 
         buildings = cache2.search_buildings()
-        assert len(buildings) == 3
+        assert len(buildings) == 4
         assert cache2._buildings is not None  # Now loaded
 
     def test_get_building_by_id(self, tmp_path: Path) -> None:

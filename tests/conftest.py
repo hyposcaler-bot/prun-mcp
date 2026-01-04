@@ -125,6 +125,32 @@ SAMPLE_BUILDINGS = [
         ],
         "Recipes": [],
     },
+    {
+        "BuildingId": "4d9c9787a38e11dd7f7cfec32245bb79",
+        "Name": "foodProcessor",
+        "Ticker": "FP",
+        "Expertise": "FOOD_INDUSTRIES",
+        "Pioneers": 40,
+        "Settlers": 0,
+        "Technicians": 0,
+        "Engineers": 0,
+        "Scientists": 0,
+        "AreaCost": 12,
+        "BuildingCosts": [
+            {
+                "CommodityName": "basicStructuralElements",
+                "CommodityTicker": "BSE",
+                "Amount": 3,
+            },
+            {"CommodityName": "basicBulkhead", "CommodityTicker": "BBH", "Amount": 3},
+            {
+                "CommodityName": "basicDeckElements",
+                "CommodityTicker": "BDE",
+                "Amount": 3,
+            },
+        ],
+        "Recipes": [],
+    },
 ]
 
 # Sample planet response from /planet/{Planet}

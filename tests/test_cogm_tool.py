@@ -117,11 +117,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -165,11 +170,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -209,11 +219,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
         ):
             result = await calculate_cogm(
@@ -241,20 +256,11 @@ class TestCalculateCogm:
 
     async def test_api_error(self, tmp_path: Path) -> None:
         """Test COGM calculation handles API errors gracefully."""
-        buildings_cache = BuildingsCache(cache_dir=tmp_path / "buildings")
-        # Don't populate - will trigger API call
-
-        mock_client = AsyncMock()
-        mock_client.get_all_buildings.side_effect = FIOApiError(
-            "Server error", status_code=500
+        mock_ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with (
-            patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
-            ),
-            patch("prun_mcp.tools.cogm.get_fio_client", return_value=mock_client),
-        ):
+        with patch("prun_mcp.tools.cogm.ensure_buildings_cache", mock_ensure):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
                 exchange="CI1",
@@ -287,11 +293,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -323,11 +334,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -384,11 +400,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -434,11 +455,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -480,11 +506,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):
@@ -517,11 +548,16 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.get_buildings_cache", return_value=buildings_cache
+                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                AsyncMock(return_value=buildings_cache),
             ),
-            patch("prun_mcp.tools.cogm.get_recipes_cache", return_value=recipes_cache),
             patch(
-                "prun_mcp.tools.cogm.get_workforce_cache", return_value=workforce_cache
+                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                AsyncMock(return_value=recipes_cache),
+            ),
+            patch(
+                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                AsyncMock(return_value=workforce_cache),
             ),
             patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
         ):

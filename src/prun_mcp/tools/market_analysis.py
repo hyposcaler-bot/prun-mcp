@@ -11,7 +11,7 @@ from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
-from prun_mcp.resources.exchanges import VALID_EXCHANGES
+from prun_mcp.prun_lib import VALID_EXCHANGES
 from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)

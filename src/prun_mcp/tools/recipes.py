@@ -7,31 +7,15 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import RecipesCache
+from prun_mcp.cache import (
+    ensure_buildings_cache,
+    ensure_recipes_cache,
+    get_recipes_cache,
+)
 from prun_mcp.fio import FIOApiError, get_fio_client
 from prun_mcp.utils import prettify_names
 
 logger = logging.getLogger(__name__)
-
-# Shared instance
-_recipes_cache: RecipesCache | None = None
-
-
-def get_recipes_cache() -> RecipesCache:
-    """Get or create the shared recipes cache."""
-    global _recipes_cache
-    if _recipes_cache is None:
-        _recipes_cache = RecipesCache()
-    return _recipes_cache
-
-
-async def _ensure_recipes_cache_populated() -> None:
-    """Ensure the recipes cache is populated and valid."""
-    cache = get_recipes_cache()
-    if not cache.is_valid():
-        client = get_fio_client()
-        recipes = await client.get_all_recipes()
-        cache.refresh(recipes)
 
 
 @mcp.tool()
@@ -46,10 +30,7 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
         TOON-encoded recipe data including building, inputs, outputs, and duration.
     """
     try:
-        await _ensure_recipes_cache_populated()
-        cache = get_recipes_cache()
-
-        # Parse comma-separated tickers
+        cache = await ensure_recipes_cache()
         tickers = [t.strip().upper() for t in ticker.split(",")]
 
         recipes: list[dict[str, Any]] = []
@@ -62,7 +43,6 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
             else:
                 recipes.extend(t_recipes)
 
-        # Build response
         if not recipes and not_found:
             return [
                 TextContent(
@@ -103,14 +83,7 @@ async def search_recipes(
     try:
         # Validate building ticker if provided
         if building:
-            from prun_mcp.tools.buildings import get_buildings_cache
-
-            buildings_cache = get_buildings_cache()
-            if not buildings_cache.is_valid():
-                client = get_fio_client()
-                buildings_data = await client.get_all_buildings()
-                buildings_cache.refresh(buildings_data)
-
+            buildings_cache = await ensure_buildings_cache()
             building_upper = building.upper()
             if not buildings_cache.get_building(building_upper):
                 return [
@@ -120,8 +93,7 @@ async def search_recipes(
                     )
                 ]
 
-        await _ensure_recipes_cache_populated()
-        cache = get_recipes_cache()
+        cache = await ensure_recipes_cache()
         recipes = cache.search_recipes(
             building=building,
             input_tickers=input_tickers,

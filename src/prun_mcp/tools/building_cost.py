@@ -56,7 +56,9 @@ async def calculate_building_cost(
         cache = await ensure_buildings_cache()
         building_data = cache.get_building(building_ticker)
         if building_data is None:
-            return [TextContent(type="text", text=f"Building not found: {building_ticker}")]
+            return [
+                TextContent(type="text", text=f"Building not found: {building_ticker}")
+            ]
         building = FIOBuilding.model_validate(building_data)
 
         # Get planet from API
