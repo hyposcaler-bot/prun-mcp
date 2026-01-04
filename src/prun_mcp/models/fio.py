@@ -6,54 +6,63 @@ Name fields are automatically prettified from camelCase to Title Case.
 """
 
 import re
+from typing import Annotated, Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, BeforeValidator, Field
 
 
-def _camel_to_title(text: str) -> str:
-    """Convert camelCase to Title Case."""
+def camel_to_title(text: str) -> str:
+    """Convert camelCase to Title Case.
+
+    Args:
+        text: A camelCase string (e.g., "drinkingWater").
+
+    Returns:
+        Title Case string (e.g., "Drinking Water").
+
+    Examples:
+        >>> camel_to_title("drinkingWater")
+        'Drinking Water'
+        >>> camel_to_title("pioneerClothing")
+        'Pioneer Clothing'
+    """
     spaced = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
     return spaced.title()
+
+
+def _prettify_name(v: Any) -> Any:
+    """Validator that converts camelCase strings to Title Case."""
+    if isinstance(v, str) and v:
+        return camel_to_title(v)
+    return v
+
+
+# Annotated type for name fields that auto-prettify from camelCase
+PrettifiedName = Annotated[str, BeforeValidator(_prettify_name)]
 
 
 class FIOMaterial(BaseModel):
     """Material data from the FIO API."""
 
     material_id: str = Field(alias="MaterialId")
-    category_name: str = Field(alias="CategoryName", default="")
+    category_name: PrettifiedName = Field(alias="CategoryName", default="")
     category_id: str = Field(alias="CategoryId", default="")
-    name: str = Field(alias="Name")
+    name: PrettifiedName = Field(alias="Name")
     ticker: str = Field(alias="Ticker")
     weight: float = Field(alias="Weight", default=0.0)
     volume: float = Field(alias="Volume", default=0.0)
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
 
-    @field_validator("name", "category_name", mode="before")
-    @classmethod
-    def prettify_name(cls, v: str) -> str:
-        """Convert camelCase names to Title Case."""
-        if isinstance(v, str) and v:
-            return _camel_to_title(v)
-        return v
-
 
 class FIOBuildingCost(BaseModel):
     """A single material cost entry for a building."""
 
-    commodity_name: str = Field(alias="CommodityName", default="")
+    commodity_name: PrettifiedName = Field(alias="CommodityName", default="")
     commodity_ticker: str = Field(alias="CommodityTicker")
     amount: int = Field(alias="Amount")
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
-
-    @field_validator("commodity_name", mode="before")
-    @classmethod
-    def prettify_name(cls, v: str) -> str:
-        """Convert camelCase names to Title Case."""
-        if isinstance(v, str) and v:
-            return _camel_to_title(v)
-        return v
 
 
 class FIOBuilding(BaseModel):
@@ -64,21 +73,13 @@ class FIOBuilding(BaseModel):
     """
 
     ticker: str = Field(alias="Ticker")
-    name: str = Field(alias="Name")
+    name: PrettifiedName = Field(alias="Name")
     area_cost: int = Field(alias="AreaCost")
     building_costs: list[FIOBuildingCost] = Field(
         default_factory=list, alias="BuildingCosts"
     )
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def prettify_name(cls, v: str) -> str:
-        """Convert camelCase names to Title Case."""
-        if isinstance(v, str) and v:
-            return _camel_to_title(v)
-        return v
 
 
 class FIOPlanet(BaseModel):
@@ -150,7 +151,7 @@ class FIOBuildingFull(BaseModel):
 
     building_id: str = Field(alias="BuildingId", default="")
     ticker: str = Field(alias="Ticker")
-    name: str = Field(alias="Name")
+    name: PrettifiedName = Field(alias="Name")
     expertise: str | None = Field(alias="Expertise", default=None)
     area_cost: int = Field(alias="AreaCost")
     pioneers: int = Field(alias="Pioneers", default=0)
@@ -164,14 +165,6 @@ class FIOBuildingFull(BaseModel):
     recipes: list[FIOBuildingRecipe] = Field(default_factory=list, alias="Recipes")
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def prettify_name(cls, v: str) -> str:
-        """Convert camelCase names to Title Case."""
-        if isinstance(v, str) and v:
-            return _camel_to_title(v)
-        return v
 
     def get_workforce_count(self, workforce_type: str) -> int:
         """Get workforce count by type name (e.g., 'Pioneers', 'PIONEER')."""

@@ -26,6 +26,7 @@ from prun_mcp.models.fio import (
     FIOPlanetResource,
     FIORecipe,
     FIORecipeIO,
+    camel_to_title,
 )
 
 __all__ = [
@@ -43,6 +44,8 @@ __all__ = [
     "FIOPlanetResource",
     "FIORecipe",
     "FIORecipeIO",
+    # Utilities
+    "camel_to_title",
     # Domain models
     "BuildingCostResult",
     "COGMBreakdown",

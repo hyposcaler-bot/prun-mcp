@@ -9,7 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
 from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.models.fio import FIOBuildingFull
+from prun_mcp.models.fio import FIOBuildingFull, camel_to_title
 
 logger = logging.getLogger(__name__)
 
@@ -146,20 +146,11 @@ async def search_buildings(
             workforce=workforce,
         )
 
-        # Search results only have Ticker and Name - get full data for prettification
-        result_buildings: list[dict[str, str]] = []
-        for b in buildings:
-            ticker = b.get("Ticker", "")
-            # Get full building data for name prettification
-            full_data = cache.get_building(ticker)
-            if full_data:
-                building = FIOBuildingFull.model_validate(full_data)
-                result_buildings.append(
-                    {"Ticker": building.ticker, "Name": building.name}
-                )
-            else:
-                # Fallback if full data not available
-                result_buildings.append({"Ticker": ticker, "Name": b.get("Name", "")})
+        # Apply name prettification directly to search results
+        result_buildings: list[dict[str, str]] = [
+            {"Ticker": b.get("Ticker", ""), "Name": camel_to_title(b.get("Name", ""))}
+            for b in buildings
+        ]
 
         return toon_encode({"buildings": result_buildings})
 
