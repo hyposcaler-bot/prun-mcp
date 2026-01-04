@@ -1,6 +1,7 @@
 """Building cost calculation tool."""
 
 import logging
+from typing import Any
 
 from mcp.types import TextContent
 from toon_format import encode as toon_encode
@@ -8,6 +9,7 @@ from toon_format import encode as toon_encode
 from prun_mcp.app import mcp
 from prun_mcp.cache import ensure_buildings_cache
 from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
+from prun_mcp.models.domain import BuildingCostResult
 from prun_mcp.models.fio import FIOBuilding, FIOPlanet
 from prun_mcp.prun_lib import (
     InvalidExchangeError,
@@ -19,6 +21,40 @@ from prun_mcp.prun_lib import (
 from prun_mcp.utils import fetch_prices
 
 logger = logging.getLogger(__name__)
+
+
+def format_building_cost_result(result: BuildingCostResult) -> dict[str, Any]:
+    """Format BuildingCostResult for TOON output."""
+    output: dict[str, Any] = {
+        "building": result.building_ticker,
+        "planet": f"{result.planet_name} ({result.planet_id})",
+        "area": result.area,
+    }
+
+    if result.exchange:
+        output["exchange"] = result.exchange
+
+    materials_list = []
+    for mat in result.materials:
+        entry: dict[str, Any] = {
+            "material": mat.ticker,
+            "amount": mat.amount,
+        }
+        if result.exchange:
+            entry["price"] = mat.price
+            entry["cost"] = mat.cost
+        materials_list.append(entry)
+
+    output["materials"] = materials_list
+
+    if result.exchange:
+        output["total_cost"] = result.total_cost
+        if result.missing_prices:
+            output["missing_prices"] = result.missing_prices
+
+    output["environment"] = result.environment.description
+
+    return output
 
 
 @mcp.tool()
@@ -75,14 +111,14 @@ async def calculate_building_cost(
             all_tickers = sorted(building_materials | infra_materials)
             prices = await fetch_prices(all_tickers, exchange)
 
-        # Calculate and return
+        # Calculate and format result
         result = calculate_building_cost_logic(
             building=building,
             planet=planet_model,
             prices=prices,
             exchange=exchange,
         )
-        return toon_encode(result.to_output_dict())
+        return toon_encode(format_building_cost_result(result))
 
     except InfertilePlanetError as e:
         return [TextContent(type="text", text=str(e))]
