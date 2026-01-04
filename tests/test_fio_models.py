@@ -4,6 +4,7 @@ from prun_mcp.models.fio import (
     FIOBuilding,
     FIOBuildingCost,
     FIOBuildingFull,
+    FIOExchangeOrder,
     FIOMaterial,
     camel_to_title,
 )
@@ -130,11 +131,71 @@ class TestFIOBuildingFullPrettification:
             "Name": "prefabPlant1",
             "AreaCost": 30,
             "BuildingCosts": [
-                {"CommodityName": "basicStructuralElements", "CommodityTicker": "BSE", "Amount": 4},
-                {"CommodityName": "mineralConstructionGranulate", "CommodityTicker": "MCG", "Amount": 2},
+                {
+                    "CommodityName": "basicStructuralElements",
+                    "CommodityTicker": "BSE",
+                    "Amount": 4,
+                },
+                {
+                    "CommodityName": "mineralConstructionGranulate",
+                    "CommodityTicker": "MCG",
+                    "Amount": 2,
+                },
             ],
         }
         building = FIOBuildingFull.model_validate(data)
         dumped = building.model_dump(by_alias=True)
-        assert dumped["BuildingCosts"][0]["CommodityName"] == "Basic Structural Elements"
-        assert dumped["BuildingCosts"][1]["CommodityName"] == "Mineral Construction Granulate"
+        assert (
+            dumped["BuildingCosts"][0]["CommodityName"] == "Basic Structural Elements"
+        )
+        assert (
+            dumped["BuildingCosts"][1]["CommodityName"]
+            == "Mineral Construction Granulate"
+        )
+
+
+class TestFIOExchangeOrder:
+    """Tests for FIOExchangeOrder handling of nullable fields."""
+
+    def test_with_all_fields(self) -> None:
+        """Test order with all fields populated."""
+        data = {
+            "CompanyCode": "TEST",
+            "ItemCount": 100,
+            "ItemCost": 50.0,
+        }
+        order = FIOExchangeOrder.model_validate(data)
+        assert order.company_code == "TEST"
+        assert order.item_count == 100
+        assert order.item_cost == 50.0
+
+    def test_with_null_item_count(self) -> None:
+        """Test order with null ItemCount (market maker orders)."""
+        data = {
+            "CompanyCode": "CIMM",
+            "ItemCount": None,
+            "ItemCost": 176.0,
+        }
+        order = FIOExchangeOrder.model_validate(data)
+        assert order.company_code == "CIMM"
+        assert order.item_count is None
+        assert order.item_cost == 176.0
+
+    def test_with_null_item_cost(self) -> None:
+        """Test order with null ItemCost."""
+        data = {
+            "CompanyCode": "TEST",
+            "ItemCount": 100,
+            "ItemCost": None,
+        }
+        order = FIOExchangeOrder.model_validate(data)
+        assert order.item_cost is None
+
+    def test_missing_optional_fields_default_to_none(self) -> None:
+        """Test that missing optional fields default to None."""
+        data = {
+            "CompanyCode": "TEST",
+        }
+        order = FIOExchangeOrder.model_validate(data)
+        assert order.item_count is None
+        assert order.item_cost is None

@@ -183,8 +183,8 @@ class FIOExchangeOrder(BaseModel):
     """A single buy or sell order on an exchange."""
 
     company_code: str = Field(alias="CompanyCode")
-    item_count: int = Field(alias="ItemCount")
-    item_cost: float = Field(alias="ItemCost")
+    item_count: int | None = Field(alias="ItemCount", default=None)
+    item_cost: float | None = Field(alias="ItemCost", default=None)
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
 
