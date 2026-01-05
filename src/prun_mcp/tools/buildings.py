@@ -1,31 +1,22 @@
 """Building-related MCP tools."""
 
 import logging
-from typing import Any
 
 from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
-from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.models.fio import FIOBuildingFull, camel_to_title
+from prun_mcp.fio import FIOApiError
+from prun_mcp.prun_lib.buildings import (
+    BuildingNotFoundError,
+    InvalidExpertiseError,
+    InvalidWorkforceError,
+    get_building_info_async,
+    refresh_buildings_cache_async,
+    search_buildings_async,
+)
 
 logger = logging.getLogger(__name__)
-
-VALID_EXPERTISE = {
-    "AGRICULTURE",
-    "CHEMISTRY",
-    "CONSTRUCTION",
-    "ELECTRONICS",
-    "FOOD_INDUSTRIES",
-    "FUEL_REFINING",
-    "MANUFACTURING",
-    "METALLURGY",
-    "RESOURCE_EXTRACTION",
-}
-
-VALID_WORKFORCE = {"Pioneers", "Settlers", "Technicians", "Engineers", "Scientists"}
 
 
 @mcp.tool()
@@ -42,34 +33,10 @@ async def get_building_info(ticker: str) -> str | list[TextContent]:
         construction costs, and workforce requirements.
     """
     try:
-        cache = await ensure_buildings_cache()
-        identifiers = [t.strip() for t in ticker.split(",")]
-
-        buildings: list[dict[str, Any]] = []
-        not_found: list[str] = []
-
-        for identifier in identifiers:
-            data = cache.get_building(identifier)
-            if data is None:
-                not_found.append(identifier)
-            else:
-                # Parse into Pydantic model for validation and prettification
-                building = FIOBuildingFull.model_validate(data)
-                buildings.append(building.model_dump(by_alias=True))
-
-        if not buildings and not_found:
-            return [
-                TextContent(
-                    type="text", text=f"Buildings not found: {', '.join(not_found)}"
-                )
-            ]
-
-        result: dict[str, Any] = {"buildings": buildings}
-        if not_found:
-            result["not_found"] = not_found
-
+        result = await get_building_info_async(ticker)
         return toon_encode(result)
-
+    except BuildingNotFoundError as e:
+        return [TextContent(type="text", text=str(e))]
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")
         return [TextContent(type="text", text=f"FIO API error: {e}")]
@@ -85,15 +52,7 @@ async def refresh_buildings_cache() -> str:
         Status message with the number of buildings cached.
     """
     try:
-        cache = get_buildings_cache()
-        cache.invalidate()
-
-        client = get_fio_client()
-        buildings = await client.get_all_buildings()
-        cache.refresh(buildings)
-
-        return f"Cache refreshed with {cache.building_count()} buildings"
-
+        return await refresh_buildings_cache_async()
     except FIOApiError as e:
         logger.exception("FIO API error while refreshing buildings cache")
         return f"Failed to refresh cache: {e}"
@@ -120,40 +79,17 @@ async def search_buildings(
         TOON-encoded list of matching buildings (Ticker and Name only).
         Use get_building_info for full details. All buildings if no filters.
     """
-    if expertise and expertise.upper() not in VALID_EXPERTISE:
-        valid_list = ", ".join(sorted(VALID_EXPERTISE))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid expertise '{expertise}'. Valid values: {valid_list}",
-            )
-        ]
-
-    if workforce and workforce not in VALID_WORKFORCE:
-        valid_list = ", ".join(sorted(VALID_WORKFORCE))
-        return [
-            TextContent(
-                type="text",
-                text=f"Invalid workforce '{workforce}'. Valid values: {valid_list}",
-            )
-        ]
-
     try:
-        cache = await ensure_buildings_cache()
-        buildings = cache.search_buildings(
+        result = await search_buildings_async(
             commodity_tickers=commodity_tickers,
             expertise=expertise,
             workforce=workforce,
         )
-
-        # Apply name prettification directly to search results
-        result_buildings: list[dict[str, str]] = [
-            {"Ticker": b.get("Ticker", ""), "Name": camel_to_title(b.get("Name", ""))}
-            for b in buildings
-        ]
-
-        return toon_encode({"buildings": result_buildings})
-
+        return toon_encode(result)
+    except InvalidExpertiseError as e:
+        return [TextContent(type="text", text=str(e))]
+    except InvalidWorkforceError as e:
+        return [TextContent(type="text", text=str(e))]
     except FIOApiError as e:
         logger.exception("FIO API error while fetching buildings")
         return [TextContent(type="text", text=f"FIO API error: {e}")]

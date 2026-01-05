@@ -32,9 +32,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -62,9 +62,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -82,9 +82,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -108,9 +108,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -134,9 +134,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -168,9 +168,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -194,9 +194,9 @@ class TestGetPlanetInfo:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -222,9 +222,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -246,9 +246,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -269,9 +269,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -296,9 +296,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -320,9 +320,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -346,9 +346,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):
@@ -398,7 +398,9 @@ class TestSearchPlanets:
             "Server error", status_code=500
         )
 
-        with patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client):
+        with patch(
+            "prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client
+        ):
             result = await search_planets()
 
         assert isinstance(result, list)
@@ -417,9 +419,9 @@ class TestSearchPlanets:
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
         with (
-            patch("prun_mcp.tools.planets.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
             patch(
-                "prun_mcp.tools.planets.ensure_materials_cache",
+                "prun_mcp.prun_lib.planets.ensure_materials_cache",
                 AsyncMock(return_value=mock_cache),
             ),
         ):

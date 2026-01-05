@@ -139,7 +139,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -157,7 +157,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("rat", "ci1")
@@ -174,7 +174,7 @@ class TestGetMarketSummary:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT,BSE", "CI1")
@@ -190,7 +190,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WIDE_SPREAD
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("COF", "CI1")
@@ -205,7 +205,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WIDE_SPREAD
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("COF", "CI1")
@@ -219,7 +219,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WIDE_SPREAD
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("COF", "CI1")
@@ -236,7 +236,7 @@ class TestGetMarketSummary:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT,INVALID", "CI1")
@@ -253,14 +253,13 @@ class TestGetMarketSummary:
         )
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("INVALID", "CI1")
 
-        assert isinstance(result, list)
-        assert isinstance(result[0], TextContent)
-        assert "no exchange data" in result[0].text.lower()
+        assert isinstance(result, str)
+        assert "no exchange data" in result.lower()
 
     async def test_invalid_exchange(self) -> None:
         """Test invalid exchange returns error."""
@@ -276,7 +275,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.side_effect = FIOApiError("Server error")
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -291,7 +290,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WITH_MM
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -307,7 +306,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -321,7 +320,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_NEAR_MM_CEILING
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -336,7 +335,7 @@ class TestGetMarketSummary:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_NEAR_MM_FLOOR
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_market_summary("RAT", "CI1")
@@ -355,7 +354,7 @@ class TestAnalyzeFillCost:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await analyze_fill_cost("RAT", "CI1", 100, "buy")
@@ -377,7 +376,7 @@ class TestAnalyzeFillCost:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await analyze_fill_cost("RAT", "CI1", 100, "buy")
@@ -392,7 +391,7 @@ class TestAnalyzeFillCost:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await analyze_fill_cost("RAT", "CI1", 50, "sell")
@@ -407,7 +406,7 @@ class TestAnalyzeFillCost:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             # Try to buy more than available (sample has 250 units for sale)
@@ -424,7 +423,7 @@ class TestAnalyzeFillCost:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await analyze_fill_cost("RAT", "CI1", 200, "buy")
@@ -457,7 +456,7 @@ class TestAnalyzeFillCost:
         )
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await analyze_fill_cost("INVALID", "CI1", 100, "buy")
@@ -477,7 +476,7 @@ class TestGetPriceHistorySummary:
         mock_client.get_price_history.return_value = SAMPLE_PRICE_HISTORY
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history_summary("RAT", "CI1", days=7)
@@ -501,7 +500,7 @@ class TestGetPriceHistorySummary:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history_summary("RAT,BSE", "CI1")
@@ -526,7 +525,7 @@ class TestGetPriceHistorySummary:
         mock_client.get_price_history.return_value = []
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history_summary("RAT", "CI1")
@@ -544,7 +543,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT", "CI1")
@@ -563,7 +562,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT", "CI1", side="sell")
@@ -578,7 +577,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT", "CI1", side="buy")
@@ -596,7 +595,7 @@ class TestGetOrderBookDepth:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT,BSE", "CI1")
@@ -614,7 +613,7 @@ class TestGetOrderBookDepth:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT,BSE", "CI1", levels=50)
@@ -630,7 +629,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT", "CI1")
@@ -664,7 +663,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WITH_MM
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("RAT", "CI1")
@@ -681,7 +680,7 @@ class TestGetOrderBookDepth:
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_WIDE_SPREAD
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_order_book_depth("COF", "CI1")
@@ -702,7 +701,7 @@ class TestGetPriceHistory:
         mock_client.get_price_history.return_value = SAMPLE_PRICE_HISTORY
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history("RAT", "CI1")
@@ -721,7 +720,7 @@ class TestGetPriceHistory:
         mock_client.get_price_history.return_value = SAMPLE_PRICE_HISTORY
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history("RAT", "CI1")
@@ -742,7 +741,7 @@ class TestGetPriceHistory:
         mock_client.get_price_history.return_value = SAMPLE_PRICE_HISTORY
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history("RAT", "CI1")
@@ -763,7 +762,7 @@ class TestGetPriceHistory:
         ]
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history("RAT,BSE", "CI1")
@@ -780,7 +779,7 @@ class TestGetPriceHistory:
         )
 
         with patch(
-            "prun_mcp.tools.market_analysis.get_fio_client",
+            "prun_mcp.fio.get_fio_client",
             return_value=mock_client,
         ):
             result = await get_price_history("INVALID", "CI1")

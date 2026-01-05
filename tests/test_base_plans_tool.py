@@ -8,12 +8,12 @@ import pytest
 from mcp.types import TextContent
 from toon_format import decode as toon_decode
 
+from prun_mcp.prun_lib.base_plans import get_base_plan_storage
 from prun_mcp.storage import BasePlanStorage
 from prun_mcp.tools.base_plans import (
     calculate_plan_io,
     delete_base_plan,
     get_base_plan,
-    get_base_plan_storage,
     list_base_plans,
     save_base_plan,
 )
@@ -40,7 +40,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="New Plan",
@@ -62,7 +62,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Full Plan",
@@ -94,7 +94,7 @@ class TestSaveBasePlan:
         storage = create_storage_with_plans(tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Test Plan",  # Already exists
@@ -112,7 +112,7 @@ class TestSaveBasePlan:
         storage = create_storage_with_plans(tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Test Plan",
@@ -132,7 +132,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Warning Plan",
@@ -152,7 +152,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="",  # Invalid: empty name
@@ -170,7 +170,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Active Plan",
@@ -195,7 +195,7 @@ class TestSaveBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Inactive Plan",
@@ -224,7 +224,7 @@ class TestGetBasePlan:
         storage = create_storage_with_plans(tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await get_base_plan("Test Plan")
 
@@ -238,7 +238,7 @@ class TestGetBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await get_base_plan("Nonexistent")
 
@@ -255,7 +255,7 @@ class TestListBasePlans:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await list_base_plans()
 
@@ -268,7 +268,7 @@ class TestListBasePlans:
         storage = create_storage_with_plans(tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await list_base_plans()
 
@@ -300,7 +300,7 @@ class TestListBasePlans:
         storage.save_plan(inactive_plan)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await list_base_plans(active=True)
 
@@ -326,7 +326,7 @@ class TestListBasePlans:
         storage.save_plan(inactive_plan)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await list_base_plans(active=False)
 
@@ -345,7 +345,7 @@ class TestListBasePlans:
         storage.save_plan(plan)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await list_base_plans()
 
@@ -365,7 +365,7 @@ class TestDeleteBasePlan:
         storage = create_storage_with_plans(tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await delete_base_plan("Test Plan")
 
@@ -382,7 +382,7 @@ class TestDeleteBasePlan:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await delete_base_plan("Nonexistent")
 
@@ -399,7 +399,7 @@ class TestCalculatePlanIo:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await calculate_plan_io("Nonexistent", "CI1")
 
@@ -407,23 +407,29 @@ class TestCalculatePlanIo:
         assert isinstance(result[0], TextContent)
         assert "not found" in result[0].text.lower()
 
-    async def test_calls_calculate_permit_io(self, tmp_path: Path) -> None:
-        """calculate_plan_io calls calculate_permit_io with correct args."""
+    async def test_calls_calculate_base_io(self, tmp_path: Path) -> None:
+        """calculate_plan_io calls calculate_base_io with correct args."""
         storage = create_storage_with_plans(tmp_path)
 
-        mock_permit_io = AsyncMock(return_value="mock_result")
+        mock_base_io = AsyncMock(return_value={"test": "result"})
 
-        with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        with (
+            patch(
+                "prun_mcp.prun_lib.base_plans.get_base_plan_storage",
+                return_value=storage,
+            ),
+            patch(
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
+                mock_base_io,
+            ),
         ):
-            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
-                result = await calculate_plan_io("Test Plan", "CI1")
+            result = await calculate_plan_io("Test Plan", "CI1")
 
-        # Verify calculate_permit_io was called
-        mock_permit_io.assert_called_once()
+        # Verify calculate_base_io was called
+        mock_base_io.assert_called_once()
 
         # Check the arguments
-        call_kwargs = mock_permit_io.call_args.kwargs
+        call_kwargs = mock_base_io.call_args.kwargs
         assert call_kwargs["exchange"] == "CI1"
         assert call_kwargs["permits"] == 1
 
@@ -440,8 +446,10 @@ class TestCalculatePlanIo:
         assert habitation[0]["building"] == "HB1"
         assert habitation[0]["count"] == 5
 
-        # Verify result is passed through
-        assert result == "mock_result"
+        # Verify result is TOON encoded
+        assert isinstance(result, str)
+        decoded = toon_decode(result)
+        assert decoded["test"] == "result"  # type: ignore[index]
 
     async def test_default_efficiency(self, tmp_path: Path) -> None:
         """calculate_plan_io uses default efficiency 1.0 if not specified."""
@@ -456,15 +464,21 @@ class TestCalculatePlanIo:
         # Manually add to bypass validation
         storage._plans = {"No Efficiency Plan": plan}
 
-        mock_permit_io = AsyncMock(return_value="mock_result")
+        mock_base_io = AsyncMock(return_value={"test": "result"})
 
-        with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        with (
+            patch(
+                "prun_mcp.prun_lib.base_plans.get_base_plan_storage",
+                return_value=storage,
+            ),
+            patch(
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
+                mock_base_io,
+            ),
         ):
-            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
-                await calculate_plan_io("No Efficiency Plan", "CI1")
+            await calculate_plan_io("No Efficiency Plan", "CI1")
 
-        call_kwargs = mock_permit_io.call_args.kwargs
+        call_kwargs = mock_base_io.call_args.kwargs
         production = call_kwargs["production"]
         assert production[0]["efficiency"] == 1.0  # Default
 
@@ -472,8 +486,8 @@ class TestCalculatePlanIo:
 class TestCalculatePlanIoWithExtraction:
     """Tests for calculate_plan_io with extraction."""
 
-    async def test_extraction_passed_to_permit_io(self, tmp_path: Path) -> None:
-        """calculate_plan_io passes extraction to calculate_permit_io."""
+    async def test_extraction_passed_to_base_io(self, tmp_path: Path) -> None:
+        """calculate_plan_io passes extraction to calculate_base_io."""
         storage = BasePlanStorage(storage_dir=tmp_path)
         # Create plan with extraction
         plan: dict[str, Any] = {
@@ -487,16 +501,22 @@ class TestCalculatePlanIoWithExtraction:
         }
         storage._plans = {"Extraction Plan": plan}
 
-        mock_permit_io = AsyncMock(return_value="mock_result")
+        mock_base_io = AsyncMock(return_value={"test": "result"})
 
-        with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        with (
+            patch(
+                "prun_mcp.prun_lib.base_plans.get_base_plan_storage",
+                return_value=storage,
+            ),
+            patch(
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
+                mock_base_io,
+            ),
         ):
-            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
-                result = await calculate_plan_io("Extraction Plan", "CI1")
+            result = await calculate_plan_io("Extraction Plan", "CI1")
 
         # Verify extraction was passed
-        call_kwargs = mock_permit_io.call_args.kwargs
+        call_kwargs = mock_base_io.call_args.kwargs
         extraction = call_kwargs["extraction"]
         assert extraction is not None
         assert len(extraction) == 1
@@ -508,7 +528,7 @@ class TestCalculatePlanIoWithExtraction:
         # Verify planet was passed
         assert call_kwargs["planet"] == "XK-001a"
 
-        assert result == "mock_result"
+        assert isinstance(result, str)
 
     async def test_no_extraction_passes_none(self, tmp_path: Path) -> None:
         """calculate_plan_io passes None for extraction if not in plan."""
@@ -521,15 +541,21 @@ class TestCalculatePlanIoWithExtraction:
         }
         storage._plans = {"No Extraction Plan": plan}
 
-        mock_permit_io = AsyncMock(return_value="mock_result")
+        mock_base_io = AsyncMock(return_value={"test": "result"})
 
-        with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+        with (
+            patch(
+                "prun_mcp.prun_lib.base_plans.get_base_plan_storage",
+                return_value=storage,
+            ),
+            patch(
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
+                mock_base_io,
+            ),
         ):
-            with patch("prun_mcp.tools.base_plans.calculate_permit_io", mock_permit_io):
-                await calculate_plan_io("No Extraction Plan", "CI1")
+            await calculate_plan_io("No Extraction Plan", "CI1")
 
-        call_kwargs = mock_permit_io.call_args.kwargs
+        call_kwargs = mock_base_io.call_args.kwargs
         assert call_kwargs["extraction"] is None
         assert call_kwargs["planet"] is None
 
@@ -542,7 +568,7 @@ class TestSaveBasePlanWithExtraction:
         storage = BasePlanStorage(storage_dir=tmp_path)
 
         with patch(
-            "prun_mcp.tools.base_plans.get_base_plan_storage", return_value=storage
+            "prun_mcp.prun_lib.base_plans.get_base_plan_storage", return_value=storage
         ):
             result = await save_base_plan(
                 name="Extraction Plan",
@@ -574,7 +600,7 @@ class TestGetBasePlanStorage:
     def test_returns_same_instance(self) -> None:
         """get_base_plan_storage returns same instance."""
         # Clear any existing instance
-        import prun_mcp.tools.base_plans as module
+        import prun_mcp.prun_lib.base_plans as module
 
         module._base_plan_storage = None
 

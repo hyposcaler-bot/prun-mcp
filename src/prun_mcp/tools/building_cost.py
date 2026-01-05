@@ -6,17 +6,13 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import ensure_buildings_cache
-from prun_mcp.fio import FIOApiError, FIONotFoundError, get_fio_client
-from prun_mcp.models.fio import FIOBuilding, FIOPlanet
-from prun_mcp.prun_lib import (
-    InvalidExchangeError,
-    InfertilePlanetError,
-    calculate_building_cost as calculate_building_cost_logic,
-    get_required_infrastructure_materials,
-    validate_exchange,
+from prun_mcp.fio import FIOApiError
+from prun_mcp.prun_lib.building import (
+    BuildingCostError,
+    calculate_building_cost_async,
 )
-from prun_mcp.utils import fetch_prices
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError, PlanetNotFoundError
+from prun_mcp.prun_lib.exchange import InvalidExchangeError
 
 logger = logging.getLogger(__name__)
 
@@ -45,50 +41,20 @@ async def calculate_building_cost(
         If exchange is provided, includes price and cost per material.
     """
     try:
-        exchange = validate_exchange(exchange)
-    except InvalidExchangeError as e:
-        return [TextContent(type="text", text=str(e))]
-
-    building_ticker = building_ticker.strip().upper()
-
-    try:
-        # Get building from cache
-        cache = await ensure_buildings_cache()
-        building_data = cache.get_building(building_ticker)
-        if building_data is None:
-            return [
-                TextContent(type="text", text=f"Building not found: {building_ticker}")
-            ]
-        building = FIOBuilding.model_validate(building_data)
-
-        # Get planet from API
-        client = get_fio_client()
-        try:
-            planet_data = await client.get_planet(planet)
-        except FIONotFoundError:
-            return [TextContent(type="text", text=f"Planet not found: {planet}")]
-        planet_model = FIOPlanet.model_validate(planet_data)
-
-        # Fetch prices if exchange provided
-        prices: dict[str, dict[str, float | None]] | None = None
-        if exchange:
-            building_materials = {c.commodity_ticker for c in building.building_costs}
-            infra_materials = get_required_infrastructure_materials(planet_model)
-            all_tickers = sorted(building_materials | infra_materials)
-            prices = await fetch_prices(all_tickers, exchange)
-
-        # Calculate and return
-        result = calculate_building_cost_logic(
-            building=building,
-            planet=planet_model,
-            prices=prices,
+        result = await calculate_building_cost_async(
+            building_ticker=building_ticker,
+            planet=planet,
             exchange=exchange,
         )
+
         return toon_encode(result.model_dump(by_alias=True))
 
-    except InfertilePlanetError as e:
+    except InvalidExchangeError as e:
         return [TextContent(type="text", text=str(e))]
-
+    except (BuildingNotFoundError, PlanetNotFoundError) as e:
+        return [TextContent(type="text", text=str(e))]
+    except BuildingCostError as e:
+        return [TextContent(type="text", text=str(e))]
     except FIOApiError as e:
         logger.exception("FIO API error")
         return [TextContent(type="text", text=f"FIO API error: {e}")]

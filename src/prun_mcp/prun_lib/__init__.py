@@ -5,30 +5,55 @@ of the MCP presentation layer. Functions here accept and return typed
 Pydantic models.
 """
 
+# Main entry point functions
+from prun_mcp.prun_lib.base import calculate_area_limit
+from prun_mcp.prun_lib.base_io import calculate_base_io
 from prun_mcp.prun_lib.building import (
     BuildingCostError,
     InfertilePlanetError,
     calculate_building_cost,
-    get_required_infrastructure_materials,
+    calculate_building_cost_async,
 )
+from prun_mcp.prun_lib.cogm import (
+    COGMCalculationError,
+    InvalidRecipeError,
+    calculate_cogm,
+)
+
+# Unified exception classes
+from prun_mcp.prun_lib.exceptions import (
+    BuildingNotFoundError,
+    MaterialNotFoundError,
+    PlanetNotFoundError,
+    RecipeNotFoundError,
+)
+
+# Exchange validation
 from prun_mcp.prun_lib.exchange import (
-    EXCHANGES,
     VALID_EXCHANGES,
     InvalidExchangeError,
-    format_exchange_list,
     validate_exchange,
 )
 
 __all__ = [
-    # Building
-    "BuildingCostError",
-    "InfertilePlanetError",
+    # Entry points
+    "calculate_area_limit",
+    "calculate_base_io",
     "calculate_building_cost",
-    "get_required_infrastructure_materials",
-    # Exchange
-    "EXCHANGES",
-    "VALID_EXCHANGES",
+    "calculate_building_cost_async",
+    "calculate_cogm",
+    # Unified exceptions
+    "BuildingNotFoundError",
+    "MaterialNotFoundError",
+    "PlanetNotFoundError",
+    "RecipeNotFoundError",
+    # Module-specific exceptions
+    "BuildingCostError",
+    "COGMCalculationError",
+    "InfertilePlanetError",
+    "InvalidRecipeError",
     "InvalidExchangeError",
-    "format_exchange_list",
+    # Exchange
+    "VALID_EXCHANGES",
     "validate_exchange",
 ]
