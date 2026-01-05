@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import ensure_materials_cache, get_materials_cache
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import get_fio_client
 from prun_mcp.models.fio import FIOMaterial
 from prun_mcp.prun_lib.exceptions import MaterialNotFoundError
@@ -21,7 +21,7 @@ async def get_material_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         MaterialNotFoundError: If all requested materials are not found.
     """
-    cache = await ensure_materials_cache()
+    cache = await get_cache_manager().ensure(CacheType.MATERIALS)
     identifiers = [t.strip() for t in ticker.split(",")]
 
     materials: list[dict[str, Any]] = []
@@ -53,7 +53,7 @@ async def refresh_materials_cache_async() -> str:
     Returns:
         Status message with the number of materials cached.
     """
-    cache = get_materials_cache()
+    cache = get_cache_manager().get(CacheType.MATERIALS)
     cache.invalidate()
 
     client = get_fio_client()
@@ -69,7 +69,7 @@ async def get_all_materials_async() -> dict[str, Any]:
     Returns:
         Dict with 'materials' list containing all materials.
     """
-    cache = await ensure_materials_cache()
+    cache = await get_cache_manager().ensure(CacheType.MATERIALS)
     all_materials = cache.get_all_materials()
 
     materials: list[dict[str, Any]] = []

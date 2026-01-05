@@ -1,7 +1,7 @@
 """Tests for COGM (Cost of Goods Manufactured) tool."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from mcp.types import TextContent
@@ -115,20 +115,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -168,20 +202,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -217,20 +285,21 @@ class TestCalculateCogm:
         recipes_cache = create_recipes_cache(tmp_path / "recipes")
         workforce_cache = create_workforce_cache(tmp_path / "workforce")
 
-        with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
-        ):
+        # Create mock manager that returns different caches based on type
+        from prun_mcp.cache import CacheType
+        async def mock_ensure(cache_type):
+            if cache_type == CacheType.BUILDINGS:
+                return buildings_cache
+            elif cache_type == CacheType.RECIPES:
+                return recipes_cache
+            elif cache_type == CacheType.WORKFORCE:
+                return workforce_cache
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+        mock_manager = MagicMock()
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+        with patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager):
             result = await calculate_cogm(
                 recipe="NONEXISTENT=>RECIPE",
                 exchange="CI1",
@@ -256,11 +325,12 @@ class TestCalculateCogm:
 
     async def test_api_error(self, tmp_path: Path) -> None:
         """Test COGM calculation handles API errors gracefully."""
-        mock_ensure = AsyncMock(
+        mock_manager = MagicMock()
+        mock_manager.ensure = AsyncMock(
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.prun_lib.cogm.ensure_buildings_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
                 exchange="CI1",
@@ -291,20 +361,54 @@ class TestCalculateCogm:
             }
             return {t: prices_data.get(t, {"ask": None, "bid": None}) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -332,20 +436,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -398,20 +536,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             # Without self-consume
             result_normal = await calculate_cogm(
@@ -453,20 +625,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -504,20 +710,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -546,20 +786,54 @@ class TestCalculateCogm:
         ) -> dict[str, dict[str, float | None]]:
             return {t: {"ask": prices.get(t), "bid": prices.get(t)} for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.cogm.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.cogm.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.cogm.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",

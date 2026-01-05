@@ -4,6 +4,22 @@ import pytest
 import httpx
 
 
+@pytest.fixture(autouse=True)
+def reset_cache_manager():
+    """Reset the cache manager singleton and all caches between tests."""
+    import prun_mcp.cache
+
+    # Reset the singleton and all caches before each test
+    if prun_mcp.cache._cache_manager is not None:
+        prun_mcp.cache._cache_manager.reset()
+    prun_mcp.cache._cache_manager = None
+    yield
+    # Reset again after the test
+    if prun_mcp.cache._cache_manager is not None:
+        prun_mcp.cache._cache_manager.reset()
+    prun_mcp.cache._cache_manager = None
+
+
 # Sample material response from FIO API (JSON format)
 SAMPLE_MATERIAL_BSE = {
     "MaterialId": "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d",

@@ -6,12 +6,7 @@ import time
 from importlib.metadata import version as pkg_version
 from typing import Any
 
-from prun_mcp.cache import (
-    get_buildings_cache,
-    get_materials_cache,
-    get_recipes_cache,
-    get_workforce_cache,
-)
+from prun_mcp.cache import CacheType, get_cache_manager
 
 
 def _get_git_info() -> dict[str, str | None]:
@@ -74,16 +69,16 @@ def get_cache_info_data() -> dict[str, list[dict[str, Any]]]:
     caches_info: list[dict[str, Any]] = []
     now = time.time()
 
-    materials_cache = get_materials_cache()
+    materials_cache = get_cache_manager().get(CacheType.MATERIALS)
     caches_info.append(_get_cache_status("materials", materials_cache, now))
 
-    buildings_cache = get_buildings_cache()
+    buildings_cache = get_cache_manager().get(CacheType.BUILDINGS)
     caches_info.append(_get_cache_status("buildings", buildings_cache, now))
 
-    recipes_cache = get_recipes_cache()
+    recipes_cache = get_cache_manager().get(CacheType.RECIPES)
     caches_info.append(_get_cache_status("recipes", recipes_cache, now))
 
-    workforce_cache = get_workforce_cache()
+    workforce_cache = get_cache_manager().get(CacheType.WORKFORCE)
     caches_info.append(_get_cache_status("workforce", workforce_cache, now))
 
     return {"caches": caches_info}

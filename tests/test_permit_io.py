@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from typing import Any, cast
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from toon_format import decode as toon_decode
@@ -230,20 +230,54 @@ class TestCalculatePermitIo:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_permit_io(
                 production=[
@@ -278,20 +312,54 @@ class TestCalculatePermitIo:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_permit_io(
                 production=[
@@ -320,20 +388,54 @@ class TestCalculatePermitIo:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_permit_io(
                 production=[
@@ -362,20 +464,54 @@ class TestCalculatePermitIo:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_permit_io(
                 production=[
@@ -442,20 +578,54 @@ class TestAreaValidation:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             result = await calculate_permit_io(
                 production=[
@@ -487,20 +657,54 @@ class TestAreaValidation:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             # 42 FP * 12 = 504 area (over 500 limit)
             result = await calculate_permit_io(
@@ -535,20 +739,54 @@ class TestAreaValidation:
         ) -> dict[str, dict[str, float | None]]:
             return {t: prices.get(t, DEFAULT_PRICE) for t in tickers}
 
+        # Create mock manager that returns different caches based on type
+
+
+        from prun_mcp.cache import CacheType
+
+
+        async def mock_ensure(cache_type):
+
+
+            if cache_type == CacheType.BUILDINGS:
+
+
+                return buildings_cache
+
+
+            elif cache_type == CacheType.RECIPES:
+
+
+                return recipes_cache
+
+
+            elif cache_type == CacheType.WORKFORCE:
+
+
+                return workforce_cache
+
+
+            raise ValueError(f"Unexpected cache type: {cache_type}")
+
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(side_effect=mock_ensure)
+
+
+
         with (
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_buildings_cache",
-                AsyncMock(return_value=buildings_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_recipes_cache",
-                AsyncMock(return_value=recipes_cache),
-            ),
-            patch(
-                "prun_mcp.prun_lib.base_io.ensure_workforce_cache",
-                AsyncMock(return_value=workforce_cache),
-            ),
+
+
+            patch("prun_mcp.prun_lib.base_io.get_cache_manager", return_value=mock_manager),
+
+
             patch("prun_mcp.prun_lib.base_io.fetch_prices", mock_fetch_prices),
+        
+
+
         ):
             # 42 FP * 12 = 504 area (under 750 limit with 2 permits)
             result = await calculate_permit_io(

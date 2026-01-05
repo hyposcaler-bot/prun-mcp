@@ -2,11 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import (
-    ensure_buildings_cache,
-    ensure_recipes_cache,
-    get_recipes_cache,
-)
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import get_fio_client
 from prun_mcp.models.fio import FIORecipe
 from prun_mcp.prun_lib.exceptions import RecipeNotFoundError
@@ -38,7 +34,7 @@ async def get_recipe_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         RecipeNotFoundError: If no recipes found for any of the tickers.
     """
-    cache = await ensure_recipes_cache()
+    cache = await get_cache_manager().ensure(CacheType.RECIPES)
     tickers = [t.strip().upper() for t in ticker.split(",")]
 
     recipes: list[dict[str, Any]] = []
@@ -83,12 +79,12 @@ async def search_recipes_async(
     """
     # Validate building ticker if provided
     if building:
-        buildings_cache = await ensure_buildings_cache()
+        buildings_cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
         building_upper = building.upper()
         if not buildings_cache.get_building(building_upper):
             raise UnknownBuildingError(building_upper)
 
-    cache = await ensure_recipes_cache()
+    cache = await get_cache_manager().ensure(CacheType.RECIPES)
     raw_recipes = cache.search_recipes(
         building=building,
         input_tickers=input_tickers,
@@ -111,7 +107,7 @@ async def refresh_recipes_cache_async() -> str:
     Returns:
         Status message with the number of recipes cached.
     """
-    cache = get_recipes_cache()
+    cache = get_cache_manager().get(CacheType.RECIPES)
     cache.invalidate()
 
     client = get_fio_client()

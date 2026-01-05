@@ -31,12 +31,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("Katoa")
 
@@ -61,12 +82,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("XK-745b")
 
@@ -81,12 +123,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("Katoa,Montem")
 
@@ -107,12 +170,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("Katoa, Montem")
 
@@ -133,12 +217,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("Katoa,INVALID,Montem")
 
@@ -167,12 +272,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("INVALID1,INVALID2")
 
@@ -193,12 +319,33 @@ class TestGetPlanetInfo:
         mock_cache = MagicMock()
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await get_planet_info("Katoa")
 
@@ -221,12 +368,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(include_resources="FEO")
 
@@ -245,12 +413,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(include_resources="FEO,LST")
 
@@ -268,12 +457,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             # Exclude H2O - should filter out Promitor and Berthier
             result = await search_planets(exclude_resources="H2O")
@@ -295,12 +505,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(limit=1)
 
@@ -319,12 +550,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(top_resources=2, limit=1)
 
@@ -345,12 +597,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(limit=1)
 
@@ -418,12 +691,33 @@ class TestSearchPlanets:
         mock_cache.is_valid.return_value = False
         mock_cache.get_all_materials.return_value = SAMPLE_MATERIALS_EXTENDED
 
+
+
+        mock_manager = MagicMock()
+
+
+        mock_manager.ensure = AsyncMock(return_value=mock_cache)
+
+
+
         with (
+
+
             patch("prun_mcp.prun_lib.planets.get_fio_client", return_value=mock_client),
+
+
             patch(
-                "prun_mcp.prun_lib.planets.ensure_materials_cache",
-                AsyncMock(return_value=mock_cache),
+
+
+                "prun_mcp.prun_lib.planets.get_cache_manager",
+
+
+                return_value=mock_manager,
+
+
             ),
+
+
         ):
             result = await search_planets(limit=1)
 

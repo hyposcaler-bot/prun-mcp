@@ -2,12 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import (
-    ensure_buildings_cache,
-    ensure_materials_cache,
-    ensure_recipes_cache,
-    ensure_workforce_cache,
-)
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import FIONotFoundError, get_fio_client
 from prun_mcp.prun_lib import calculate_area_limit
 from prun_mcp.utils import fetch_prices
@@ -178,9 +173,9 @@ async def calculate_base_io(
         raise PermitValidationError("permits must be at least 1")
 
     # Load caches
-    recipes_cache = await ensure_recipes_cache()
-    buildings_cache = await ensure_buildings_cache()
-    workforce_cache = await ensure_workforce_cache()
+    recipes_cache = await get_cache_manager().ensure(CacheType.RECIPES)
+    buildings_cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
+    workforce_cache = await get_cache_manager().ensure(CacheType.WORKFORCE)
 
     flow_tracker = MaterialFlowTracker()
     total_workforce: dict[str, int] = {wf: 0 for wf in WORKFORCE_TYPES}
@@ -218,7 +213,7 @@ async def calculate_base_io(
     extraction_errors: list[str] = []
     if extraction and planet:
         client = get_fio_client()
-        materials_cache = await ensure_materials_cache()
+        materials_cache = await get_cache_manager().ensure(CacheType.MATERIALS)
 
         try:
             planet_data = await client.get_planet(planet)

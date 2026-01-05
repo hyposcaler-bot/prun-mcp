@@ -1,7 +1,7 @@
 """Tests for material tools."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from mcp.types import TextContent
@@ -35,9 +35,17 @@ class TestGetMaterialInfo:
         """Test successful material lookup returns TOON-encoded data."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("BSE")
 
@@ -58,9 +66,17 @@ class TestGetMaterialInfo:
         """Test that lowercase tickers are converted to uppercase."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("bse")
 
@@ -73,9 +89,17 @@ class TestGetMaterialInfo:
         """Test comma-separated tickers returns multiple materials."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("BSE,RAT,H2O")
 
@@ -93,9 +117,17 @@ class TestGetMaterialInfo:
         """Test comma-separated tickers with spaces are handled."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("BSE, RAT, H2O")
 
@@ -108,9 +140,17 @@ class TestGetMaterialInfo:
         """Test partial matches return found materials plus not_found list."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("BSE,INVALID,RAT")
 
@@ -132,9 +172,17 @@ class TestGetMaterialInfo:
         """Test all materials not found returns error content."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("INVALID1,INVALID2")
 
@@ -147,11 +195,12 @@ class TestGetMaterialInfo:
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_ensure = AsyncMock(
+        mock_manager = MagicMock()
+        mock_manager.ensure = AsyncMock(
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.prun_lib.materials.ensure_materials_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.materials.get_cache_manager", return_value=mock_manager):
             result = await get_material_info("BSE")
 
         assert isinstance(result, list)
@@ -163,9 +212,17 @@ class TestGetMaterialInfo:
         """Test that cache is populated when invalid (ensure_materials_cache handles this)."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_material_info("BSE")
 
@@ -175,9 +232,17 @@ class TestGetMaterialInfo:
         """Test lookup by MaterialId returns correct data."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             # BSE has MaterialId "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d"
             result = await get_material_info("4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d")
@@ -192,9 +257,17 @@ class TestGetMaterialInfo:
         """Test round-trip: lookup by ID, get ticker, lookup by ticker matches."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             # Step 1: Look up by MaterialId
             result_by_id = await get_material_info("4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d")
@@ -228,7 +301,8 @@ class TestRefreshMaterialsCache:
 
         with (
             patch(
-                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+                "prun_mcp.prun_lib.materials.get_cache_manager",
+                return_value=MagicMock(get=MagicMock(return_value=cache)),
             ),
             patch(
                 "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
@@ -251,7 +325,8 @@ class TestRefreshMaterialsCache:
 
         with (
             patch(
-                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+                "prun_mcp.prun_lib.materials.get_cache_manager",
+                return_value=MagicMock(get=MagicMock(return_value=cache)),
             ),
             patch(
                 "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
@@ -274,7 +349,8 @@ class TestRefreshMaterialsCache:
 
         with (
             patch(
-                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+                "prun_mcp.prun_lib.materials.get_cache_manager",
+                return_value=MagicMock(get=MagicMock(return_value=cache)),
             ),
             patch(
                 "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
@@ -292,9 +368,17 @@ class TestGetAllMaterials:
         """Test that get_all_materials returns TOON-encoded list."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_all_materials()
 
@@ -315,9 +399,17 @@ class TestGetAllMaterials:
         """Test that cache is populated when invalid (ensure_materials_cache handles this)."""
         cache = create_populated_cache(tmp_path)
 
+        mock_manager = MagicMock()
+
+        mock_manager.ensure = AsyncMock(return_value=cache)
+
+
         with patch(
-            "prun_mcp.prun_lib.materials.ensure_materials_cache",
-            AsyncMock(return_value=cache),
+
+            "prun_mcp.prun_lib.materials.get_cache_manager",
+
+            return_value=mock_manager,
+
         ):
             result = await get_all_materials()
 
@@ -325,11 +417,12 @@ class TestGetAllMaterials:
 
     async def test_api_error_returns_error_content(self) -> None:
         """Test FIO API error returns error content."""
-        mock_ensure = AsyncMock(
+        mock_manager = MagicMock()
+        mock_manager.ensure = AsyncMock(
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.prun_lib.materials.ensure_materials_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.materials.get_cache_manager", return_value=mock_manager):
             result = await get_all_materials()
 
         assert isinstance(result, list)

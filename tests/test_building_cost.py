@@ -1,7 +1,7 @@
 """Tests for calculate_building_cost tool."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from mcp.types import TextContent
@@ -187,7 +187,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -232,7 +232,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -267,7 +267,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -302,7 +302,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -337,7 +337,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -372,7 +372,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -407,7 +407,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -442,7 +442,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -478,7 +478,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -537,7 +537,7 @@ class TestCalculateBuildingCost:
             return buildings_cache
 
         with patch(
-            "prun_mcp.prun_lib.building.ensure_buildings_cache",
+            "prun_mcp.cache.ensure_buildings_cache",
             mock_ensure_cache,
         ):
             result = await calculate_building_cost(
@@ -562,7 +562,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -583,13 +583,14 @@ class TestCalculateBuildingCost:
 
     async def test_api_error(self, tmp_path: Path) -> None:
         """Test API error is handled gracefully."""
-
-        async def mock_ensure_cache() -> BuildingsCache:
-            raise FIOApiError("Server error", status_code=500)
+        mock_manager = MagicMock()
+        mock_manager.ensure = AsyncMock(
+            side_effect=FIOApiError("Server error", status_code=500)
+        )
 
         with patch(
-            "prun_mcp.prun_lib.building.ensure_buildings_cache",
-            mock_ensure_cache,
+            "prun_mcp.prun_lib.building.get_cache_manager",
+            return_value=mock_manager,
         ):
             result = await calculate_building_cost(
                 building_ticker="FP",
@@ -624,7 +625,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
@@ -659,7 +660,7 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.prun_lib.building.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(

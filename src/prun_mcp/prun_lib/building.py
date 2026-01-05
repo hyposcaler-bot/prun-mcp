@@ -2,7 +2,7 @@
 
 import math
 
-from prun_mcp.cache import ensure_buildings_cache
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import FIONotFoundError, get_fio_client
 from prun_mcp.models.domain import (
     BuildingCostResult,
@@ -273,7 +273,7 @@ async def calculate_building_cost_async(
     building_ticker = building_ticker.strip().upper()
 
     # Get building from cache
-    cache = await ensure_buildings_cache()
+    cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
     building_data = cache.get_building(building_ticker)
     if building_data is None:
         raise BuildingNotFoundError(building_ticker)

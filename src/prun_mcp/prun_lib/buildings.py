@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import get_fio_client
 from prun_mcp.models.fio import FIOBuildingFull, camel_to_title
 from prun_mcp.prun_lib.exceptions import BuildingNotFoundError
@@ -59,7 +59,7 @@ async def get_building_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         BuildingNotFoundError: If all requested buildings are not found.
     """
-    cache = await ensure_buildings_cache()
+    cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
     identifiers = [t.strip() for t in ticker.split(",")]
 
     buildings: list[dict[str, Any]] = []
@@ -91,7 +91,7 @@ async def refresh_buildings_cache_async() -> str:
     Returns:
         Status message with the number of buildings cached.
     """
-    cache = get_buildings_cache()
+    cache = get_cache_manager().get(CacheType.BUILDINGS)
     cache.invalidate()
 
     client = get_fio_client()
@@ -126,7 +126,7 @@ async def search_buildings_async(
     if workforce and workforce not in VALID_WORKFORCE:
         raise InvalidWorkforceError(workforce)
 
-    cache = await ensure_buildings_cache()
+    cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
     buildings = cache.search_buildings(
         commodity_tickers=commodity_tickers,
         expertise=expertise,

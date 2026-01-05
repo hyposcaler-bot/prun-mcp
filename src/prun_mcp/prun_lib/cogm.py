@@ -2,11 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import (
-    ensure_buildings_cache,
-    ensure_recipes_cache,
-    ensure_workforce_cache,
-)
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.models.domain import (
     COGMBreakdown,
     COGMConsumableBreakdown,
@@ -351,9 +347,9 @@ async def calculate_cogm(
         raise InvalidEfficiencyError(efficiency)
 
     # Load caches
-    recipes_cache = await ensure_recipes_cache()
-    buildings_cache = await ensure_buildings_cache()
-    workforce_cache = await ensure_workforce_cache()
+    recipes_cache = await get_cache_manager().ensure(CacheType.RECIPES)
+    buildings_cache = await get_cache_manager().ensure(CacheType.BUILDINGS)
+    workforce_cache = await get_cache_manager().ensure(CacheType.WORKFORCE)
 
     # Look up recipe
     recipe_data = recipes_cache.get_recipe_by_name(recipe_name)

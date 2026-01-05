@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from prun_mcp.cache import ensure_materials_cache
+from prun_mcp.cache import CacheType, get_cache_manager
 from prun_mcp.fio import FIONotFoundError, get_fio_client
 from prun_mcp.prun_lib.exceptions import PlanetNotFoundError
 
@@ -29,7 +29,7 @@ class TooManyResourcesError(PlanetsError):
 
 async def _get_id_to_ticker_map() -> dict[str, str]:
     """Get MaterialId→Ticker mapping from materials cache."""
-    cache = await ensure_materials_cache()
+    cache = await get_cache_manager().ensure(CacheType.MATERIALS)
     return {
         mat.get("MaterialId", "").lower(): mat.get("Ticker", "")
         for mat in cache.get_all_materials()
