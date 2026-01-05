@@ -2,6 +2,11 @@
 
 from typing import Any
 
+from prun_mcp.cache import (
+    ensure_buildings_cache,
+    ensure_recipes_cache,
+    ensure_workforce_cache,
+)
 from prun_mcp.models.domain import (
     COGMBreakdown,
     COGMConsumableBreakdown,
@@ -11,6 +16,8 @@ from prun_mcp.models.domain import (
     COGMSelfConsumption,
     COGMTotals,
 )
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError, RecipeNotFoundError
+from prun_mcp.prun_lib.exchange import InvalidExchangeError, validate_exchange
 from prun_mcp.prun_lib.workforce import (
     WORKFORCE_TYPES,
     WorkforceNeedsProvider,
@@ -18,6 +25,7 @@ from prun_mcp.prun_lib.workforce import (
     get_workforce_from_building,
     normalize_workforce_type,
 )
+from prun_mcp.utils import fetch_prices
 
 MS_PER_DAY = 24 * 60 * 60 * 1000  # Milliseconds per day
 
@@ -26,22 +34,6 @@ class COGMCalculationError(Exception):
     """Error during COGM calculation."""
 
     pass
-
-
-class RecipeNotFoundError(COGMCalculationError):
-    """Recipe not found in cache."""
-
-    def __init__(self, recipe_name: str) -> None:
-        self.recipe_name = recipe_name
-        super().__init__(f"Recipe not found: {recipe_name}")
-
-
-class BuildingNotFoundError(COGMCalculationError):
-    """Building not found in cache."""
-
-    def __init__(self, building_ticker: str) -> None:
-        self.building_ticker = building_ticker
-        super().__init__(f"Building not found: {building_ticker}")
 
 
 class InvalidRecipeError(COGMCalculationError):
@@ -349,14 +341,6 @@ async def calculate_cogm(
         BuildingNotFoundError: If building is not found in cache.
         InvalidRecipeError: If recipe data is invalid.
     """
-    from prun_mcp.cache import (
-        ensure_buildings_cache,
-        ensure_recipes_cache,
-        ensure_workforce_cache,
-    )
-    from prun_mcp.prun_lib.exchange import InvalidExchangeError, validate_exchange
-    from prun_mcp.utils import fetch_prices
-
     # Validate inputs
     validated_exchange = validate_exchange(exchange)
     if validated_exchange is None:

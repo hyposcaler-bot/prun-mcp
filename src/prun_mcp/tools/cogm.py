@@ -11,6 +11,7 @@ from prun_mcp.prun_lib.cogm import (
     COGMCalculationError,
     calculate_cogm as calculate_cogm_logic,
 )
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError, RecipeNotFoundError
 from prun_mcp.prun_lib.exchange import InvalidExchangeError
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,8 @@ async def calculate_cogm(
         return toon_encode(result_dict)
 
     except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    except (BuildingNotFoundError, RecipeNotFoundError) as e:
         return [TextContent(type="text", text=str(e))]
     except COGMCalculationError as e:
         return [TextContent(type="text", text=str(e))]

@@ -2,7 +2,15 @@
 
 from typing import Any
 
+from prun_mcp.cache import (
+    ensure_buildings_cache,
+    ensure_materials_cache,
+    ensure_recipes_cache,
+    ensure_workforce_cache,
+)
+from prun_mcp.fio import FIONotFoundError, get_fio_client
 from prun_mcp.prun_lib import calculate_area_limit
+from prun_mcp.utils import fetch_prices
 from prun_mcp.prun_lib.exchange import InvalidExchangeError, validate_exchange
 from prun_mcp.prun_lib.material_flow import (
     MaterialFlowTracker,
@@ -156,15 +164,6 @@ async def calculate_base_io(
         ExtractionValidationError: If extraction entry is invalid.
         PermitValidationError: If permits value is invalid.
     """
-    from prun_mcp.cache import (
-        ensure_buildings_cache,
-        ensure_materials_cache,
-        ensure_recipes_cache,
-        ensure_workforce_cache,
-    )
-    from prun_mcp.fio import FIONotFoundError, get_fio_client
-    from prun_mcp.utils import fetch_prices
-
     # Validate inputs
     validated_exchange = validate_exchange(exchange)
     if validated_exchange is None:

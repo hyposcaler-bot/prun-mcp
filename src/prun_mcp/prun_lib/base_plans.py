@@ -2,6 +2,10 @@
 
 from typing import Any
 
+from prun_mcp.prun_lib.base_io import calculate_base_io
+from prun_mcp.storage import BasePlanStorage
+from prun_mcp.utils import prettify_names
+
 
 class BasePlansError(Exception):
     """Base error for base plans operations."""
@@ -27,12 +31,10 @@ class PlanSaveError(BasePlansError):
 _base_plan_storage: Any = None
 
 
-def get_base_plan_storage() -> Any:
+def get_base_plan_storage() -> BasePlanStorage:
     """Get or create the shared base plan storage."""
     global _base_plan_storage
     if _base_plan_storage is None:
-        from prun_mcp.storage import BasePlanStorage
-
         _base_plan_storage = BasePlanStorage()
     return _base_plan_storage
 
@@ -73,8 +75,6 @@ async def save_base_plan_async(
     Raises:
         PlanSaveError: If plan cannot be saved.
     """
-    from prun_mcp.utils import prettify_names
-
     # Build plan dictionary
     plan: dict[str, Any] = {
         "name": name,
@@ -124,8 +124,6 @@ async def get_base_plan_async(name: str) -> dict[str, Any]:
     Raises:
         PlanNotFoundError: If plan is not found.
     """
-    from prun_mcp.utils import prettify_names
-
     storage_instance = get_base_plan_storage()
     plan = storage_instance.get_plan(name)
 
@@ -187,8 +185,6 @@ async def calculate_plan_io_async(
     Raises:
         PlanNotFoundError: If plan is not found.
     """
-    from prun_mcp.prun_lib.base_io import calculate_base_io
-
     storage_instance = get_base_plan_storage()
     plan = storage_instance.get_plan(name)
 

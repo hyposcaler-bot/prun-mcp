@@ -36,7 +36,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("BSE")
@@ -59,7 +59,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("bse")
@@ -74,7 +74,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("BSE,RAT,H2O")
@@ -94,7 +94,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("BSE, RAT, H2O")
@@ -109,7 +109,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("BSE,INVALID,RAT")
@@ -133,7 +133,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("INVALID1,INVALID2")
@@ -151,7 +151,7 @@ class TestGetMaterialInfo:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.cache.ensure_materials_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.materials.ensure_materials_cache", mock_ensure):
             result = await get_material_info("BSE")
 
         assert isinstance(result, list)
@@ -164,7 +164,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_material_info("BSE")
@@ -176,7 +176,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             # BSE has MaterialId "4fca6f5b5e6c5b8f6c5d4e3f2a1b0c9d"
@@ -193,7 +193,7 @@ class TestGetMaterialInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             # Step 1: Look up by MaterialId
@@ -227,8 +227,12 @@ class TestRefreshMaterialsCache:
         mock_client.get_all_materials.return_value = SAMPLE_MATERIALS
 
         with (
-            patch("prun_mcp.cache.get_materials_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
+            ),
         ):
             result = await refresh_materials_cache()
 
@@ -246,8 +250,12 @@ class TestRefreshMaterialsCache:
         mock_client.get_all_materials.return_value = SAMPLE_MATERIALS
 
         with (
-            patch("prun_mcp.cache.get_materials_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
+            ),
         ):
             await refresh_materials_cache()
 
@@ -265,8 +273,12 @@ class TestRefreshMaterialsCache:
         )
 
         with (
-            patch("prun_mcp.cache.get_materials_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.materials.get_materials_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.materials.get_fio_client", return_value=mock_client
+            ),
         ):
             result = await refresh_materials_cache()
 
@@ -281,7 +293,7 @@ class TestGetAllMaterials:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_all_materials()
@@ -304,7 +316,7 @@ class TestGetAllMaterials:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_materials_cache",
+            "prun_mcp.prun_lib.materials.ensure_materials_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_all_materials()
@@ -317,7 +329,7 @@ class TestGetAllMaterials:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.cache.ensure_materials_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.materials.ensure_materials_cache", mock_ensure):
             result = await get_all_materials()
 
         assert isinstance(result, list)

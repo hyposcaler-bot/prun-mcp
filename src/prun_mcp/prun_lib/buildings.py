@@ -2,6 +2,11 @@
 
 from typing import Any
 
+from prun_mcp.cache import ensure_buildings_cache, get_buildings_cache
+from prun_mcp.fio import get_fio_client
+from prun_mcp.models.fio import FIOBuildingFull, camel_to_title
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError
+
 VALID_EXPERTISE = {
     "AGRICULTURE",
     "CHEMISTRY",
@@ -21,14 +26,6 @@ class BuildingsError(Exception):
     """Base error for buildings operations."""
 
     pass
-
-
-class BuildingNotFoundError(BuildingsError):
-    """Building not found in cache."""
-
-    def __init__(self, identifiers: list[str]) -> None:
-        self.identifiers = identifiers
-        super().__init__(f"Buildings not found: {', '.join(identifiers)}")
 
 
 class InvalidExpertiseError(BuildingsError):
@@ -62,9 +59,6 @@ async def get_building_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         BuildingNotFoundError: If all requested buildings are not found.
     """
-    from prun_mcp.cache import ensure_buildings_cache
-    from prun_mcp.models.fio import FIOBuildingFull
-
     cache = await ensure_buildings_cache()
     identifiers = [t.strip() for t in ticker.split(",")]
 
@@ -97,9 +91,6 @@ async def refresh_buildings_cache_async() -> str:
     Returns:
         Status message with the number of buildings cached.
     """
-    from prun_mcp.cache import get_buildings_cache
-    from prun_mcp.fio import get_fio_client
-
     cache = get_buildings_cache()
     cache.invalidate()
 
@@ -129,9 +120,6 @@ async def search_buildings_async(
         InvalidExpertiseError: If expertise is invalid.
         InvalidWorkforceError: If workforce is invalid.
     """
-    from prun_mcp.cache import ensure_buildings_cache
-    from prun_mcp.models.fio import camel_to_title
-
     if expertise and expertise.upper() not in VALID_EXPERTISE:
         raise InvalidExpertiseError(expertise)
 

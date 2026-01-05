@@ -11,6 +11,7 @@ from prun_mcp.prun_lib.building import (
     BuildingCostError,
     calculate_building_cost_async,
 )
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError, PlanetNotFoundError
 from prun_mcp.prun_lib.exchange import InvalidExchangeError
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,8 @@ async def calculate_building_cost(
         return toon_encode(result.model_dump(by_alias=True))
 
     except InvalidExchangeError as e:
+        return [TextContent(type="text", text=str(e))]
+    except (BuildingNotFoundError, PlanetNotFoundError) as e:
         return [TextContent(type="text", text=str(e))]
     except BuildingCostError as e:
         return [TextContent(type="text", text=str(e))]

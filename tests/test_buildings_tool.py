@@ -36,7 +36,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1")
@@ -65,7 +65,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("pp1")
@@ -80,7 +80,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1,HB1,FRM")
@@ -100,7 +100,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1, HB1, FRM")
@@ -115,7 +115,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1,INVALID,HB1")
@@ -139,7 +139,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("INVALID1,INVALID2")
@@ -157,7 +157,7 @@ class TestGetBuildingInfo:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.cache.ensure_buildings_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.buildings.ensure_buildings_cache", mock_ensure):
             result = await get_building_info("PP1")
 
         assert isinstance(result, list)
@@ -170,7 +170,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await get_building_info("PP1")
@@ -182,7 +182,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             # PP1 has BuildingId "1d9c9787a38e11dd7f7cfec32245bb76"
@@ -199,7 +199,7 @@ class TestGetBuildingInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             # Step 1: Look up by BuildingId
@@ -233,8 +233,12 @@ class TestRefreshBuildingsCache:
         mock_client.get_all_buildings.return_value = SAMPLE_BUILDINGS
 
         with (
-            patch("prun_mcp.cache.get_buildings_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_buildings_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_fio_client", return_value=mock_client
+            ),
         ):
             result = await refresh_buildings_cache()
 
@@ -252,8 +256,12 @@ class TestRefreshBuildingsCache:
         mock_client.get_all_buildings.return_value = SAMPLE_BUILDINGS
 
         with (
-            patch("prun_mcp.cache.get_buildings_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_buildings_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_fio_client", return_value=mock_client
+            ),
         ):
             await refresh_buildings_cache()
 
@@ -271,8 +279,12 @@ class TestRefreshBuildingsCache:
         )
 
         with (
-            patch("prun_mcp.cache.get_buildings_cache", return_value=cache),
-            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_buildings_cache", return_value=cache
+            ),
+            patch(
+                "prun_mcp.prun_lib.buildings.get_fio_client", return_value=mock_client
+            ),
         ):
             result = await refresh_buildings_cache()
 
@@ -287,7 +299,7 @@ class TestSearchBuildings:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await search_buildings()
@@ -315,7 +327,7 @@ class TestSearchBuildings:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await search_buildings(expertise="CONSTRUCTION")
@@ -332,7 +344,7 @@ class TestSearchBuildings:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             # All sample buildings have Pioneers
@@ -349,7 +361,7 @@ class TestSearchBuildings:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             # BSE and BDE - PP1 and FP have both
@@ -389,7 +401,7 @@ class TestSearchBuildings:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.cache.ensure_buildings_cache",
+            "prun_mcp.prun_lib.buildings.ensure_buildings_cache",
             AsyncMock(return_value=cache),
         ):
             result = await search_buildings()
@@ -402,7 +414,7 @@ class TestSearchBuildings:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.cache.ensure_buildings_cache", mock_ensure):
+        with patch("prun_mcp.prun_lib.buildings.ensure_buildings_cache", mock_ensure):
             result = await search_buildings()
 
         assert isinstance(result, list)

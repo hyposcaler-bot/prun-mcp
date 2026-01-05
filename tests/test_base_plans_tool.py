@@ -419,7 +419,7 @@ class TestCalculatePlanIo:
                 return_value=storage,
             ),
             patch(
-                "prun_mcp.prun_lib.base_io.calculate_base_io",
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
                 mock_base_io,
             ),
         ):
@@ -472,7 +472,7 @@ class TestCalculatePlanIo:
                 return_value=storage,
             ),
             patch(
-                "prun_mcp.prun_lib.base_io.calculate_base_io",
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
                 mock_base_io,
             ),
         ):
@@ -509,7 +509,7 @@ class TestCalculatePlanIoWithExtraction:
                 return_value=storage,
             ),
             patch(
-                "prun_mcp.prun_lib.base_io.calculate_base_io",
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
                 mock_base_io,
             ),
         ):
@@ -549,7 +549,7 @@ class TestCalculatePlanIoWithExtraction:
                 return_value=storage,
             ),
             patch(
-                "prun_mcp.prun_lib.base_io.calculate_base_io",
+                "prun_mcp.prun_lib.base_plans.calculate_base_io",
                 mock_base_io,
             ),
         ):

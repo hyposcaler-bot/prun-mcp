@@ -2,19 +2,20 @@
 
 from typing import Any
 
+from prun_mcp.cache import (
+    ensure_buildings_cache,
+    ensure_recipes_cache,
+    get_recipes_cache,
+)
+from prun_mcp.fio import get_fio_client
+from prun_mcp.models.fio import FIORecipe
+from prun_mcp.prun_lib.exceptions import RecipeNotFoundError
+
 
 class RecipesError(Exception):
     """Base error for recipes operations."""
 
     pass
-
-
-class RecipeNotFoundError(RecipesError):
-    """No recipes found for the given criteria."""
-
-    def __init__(self, tickers: list[str]) -> None:
-        self.tickers = tickers
-        super().__init__(f"No recipes found that produce: {', '.join(tickers)}")
 
 
 class UnknownBuildingError(RecipesError):
@@ -37,9 +38,6 @@ async def get_recipe_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         RecipeNotFoundError: If no recipes found for any of the tickers.
     """
-    from prun_mcp.cache import ensure_recipes_cache
-    from prun_mcp.models.fio import FIORecipe
-
     cache = await ensure_recipes_cache()
     tickers = [t.strip().upper() for t in ticker.split(",")]
 
@@ -83,9 +81,6 @@ async def search_recipes_async(
     Raises:
         UnknownBuildingError: If building ticker is not found.
     """
-    from prun_mcp.cache import ensure_buildings_cache, ensure_recipes_cache
-    from prun_mcp.models.fio import FIORecipe
-
     # Validate building ticker if provided
     if building:
         buildings_cache = await ensure_buildings_cache()
@@ -116,9 +111,6 @@ async def refresh_recipes_cache_async() -> str:
     Returns:
         Status message with the number of recipes cached.
     """
-    from prun_mcp.cache import get_recipes_cache
-    from prun_mcp.fio import get_fio_client
-
     cache = get_recipes_cache()
     cache.invalidate()
 

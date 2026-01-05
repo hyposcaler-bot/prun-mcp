@@ -2,19 +2,10 @@
 
 from typing import Any
 
-
-class MaterialsError(Exception):
-    """Base error for materials operations."""
-
-    pass
-
-
-class MaterialNotFoundError(MaterialsError):
-    """Material not found in cache."""
-
-    def __init__(self, identifiers: list[str]) -> None:
-        self.identifiers = identifiers
-        super().__init__(f"Materials not found: {', '.join(identifiers)}")
+from prun_mcp.cache import ensure_materials_cache, get_materials_cache
+from prun_mcp.fio import get_fio_client
+from prun_mcp.models.fio import FIOMaterial
+from prun_mcp.prun_lib.exceptions import MaterialNotFoundError
 
 
 async def get_material_info_async(ticker: str) -> dict[str, Any]:
@@ -30,9 +21,6 @@ async def get_material_info_async(ticker: str) -> dict[str, Any]:
     Raises:
         MaterialNotFoundError: If all requested materials are not found.
     """
-    from prun_mcp.cache import ensure_materials_cache
-    from prun_mcp.models.fio import FIOMaterial
-
     cache = await ensure_materials_cache()
     identifiers = [t.strip() for t in ticker.split(",")]
 
@@ -65,9 +53,6 @@ async def refresh_materials_cache_async() -> str:
     Returns:
         Status message with the number of materials cached.
     """
-    from prun_mcp.cache import get_materials_cache
-    from prun_mcp.fio import get_fio_client
-
     cache = get_materials_cache()
     cache.invalidate()
 
@@ -84,9 +69,6 @@ async def get_all_materials_async() -> dict[str, Any]:
     Returns:
         Dict with 'materials' list containing all materials.
     """
-    from prun_mcp.cache import ensure_materials_cache
-    from prun_mcp.models.fio import FIOMaterial
-
     cache = await ensure_materials_cache()
     all_materials = cache.get_all_materials()
 

@@ -2,13 +2,17 @@
 
 import math
 
+from prun_mcp.cache import ensure_buildings_cache
+from prun_mcp.fio import FIONotFoundError, get_fio_client
 from prun_mcp.models.domain import (
     BuildingCostResult,
     EnvironmentInfo,
     MaterialCost,
 )
 from prun_mcp.models.fio import FIOBuilding, FIOPlanet
+from prun_mcp.prun_lib.exceptions import BuildingNotFoundError, PlanetNotFoundError
 from prun_mcp.prun_lib.exchange import InvalidExchangeError, validate_exchange
+from prun_mcp.utils import fetch_prices
 
 # Environment thresholds for infrastructure costs
 ENV_THRESHOLDS = {
@@ -237,22 +241,6 @@ def calculate_building_cost(
     )
 
 
-class BuildingNotFoundError(BuildingCostError):
-    """Building not found in cache."""
-
-    def __init__(self, building_ticker: str) -> None:
-        self.building_ticker = building_ticker
-        super().__init__(f"Building not found: {building_ticker}")
-
-
-class PlanetNotFoundError(BuildingCostError):
-    """Planet not found in API."""
-
-    def __init__(self, planet: str) -> None:
-        self.planet = planet
-        super().__init__(f"Planet not found: {planet}")
-
-
 async def calculate_building_cost_async(
     building_ticker: str,
     planet: str,
@@ -277,10 +265,6 @@ async def calculate_building_cost_async(
         PlanetNotFoundError: If planet is not found in API.
         InfertilePlanetError: If building requires fertility and planet is infertile.
     """
-    from prun_mcp.cache import ensure_buildings_cache
-    from prun_mcp.fio import FIONotFoundError, get_fio_client
-    from prun_mcp.utils import fetch_prices
-
     # Validate exchange if provided
     validated_exchange = validate_exchange(exchange)
     if exchange is not None and validated_exchange is None:

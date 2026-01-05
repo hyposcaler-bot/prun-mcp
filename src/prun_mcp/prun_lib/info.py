@@ -3,9 +3,15 @@
 import os
 import subprocess
 import time
+from importlib.metadata import version as pkg_version
 from typing import Any
 
-from importlib.metadata import version as pkg_version
+from prun_mcp.cache import (
+    get_buildings_cache,
+    get_materials_cache,
+    get_recipes_cache,
+    get_workforce_cache,
+)
 
 
 def _get_git_info() -> dict[str, str | None]:
@@ -65,13 +71,6 @@ def get_cache_info_data() -> dict[str, list[dict[str, Any]]]:
     Returns:
         Dict with 'caches' list containing cache info.
     """
-    from prun_mcp.cache import (
-        get_buildings_cache,
-        get_materials_cache,
-        get_recipes_cache,
-        get_workforce_cache,
-    )
-
     caches_info: list[dict[str, Any]] = []
     now = time.time()
 

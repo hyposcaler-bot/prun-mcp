@@ -2,19 +2,15 @@
 
 from typing import Any
 
+from prun_mcp.cache import ensure_materials_cache
+from prun_mcp.fio import FIONotFoundError, get_fio_client
+from prun_mcp.prun_lib.exceptions import PlanetNotFoundError
+
 
 class PlanetsError(Exception):
     """Base error for planets operations."""
 
     pass
-
-
-class PlanetNotFoundError(PlanetsError):
-    """Planet not found in API."""
-
-    def __init__(self, identifiers: list[str]) -> None:
-        self.identifiers = identifiers
-        super().__init__(f"Planets not found: {', '.join(identifiers)}")
 
 
 class InvalidLimitError(PlanetsError):
@@ -33,8 +29,6 @@ class TooManyResourcesError(PlanetsError):
 
 async def _get_id_to_ticker_map() -> dict[str, str]:
     """Get MaterialId→Ticker mapping from materials cache."""
-    from prun_mcp.cache import ensure_materials_cache
-
     cache = await ensure_materials_cache()
     return {
         mat.get("MaterialId", "").lower(): mat.get("Ticker", "")
@@ -56,8 +50,6 @@ async def get_planet_info_async(planet: str) -> dict[str, Any]:
     Raises:
         PlanetNotFoundError: If all requested planets are not found.
     """
-    from prun_mcp.fio import FIONotFoundError, get_fio_client
-
     client = get_fio_client()
     planets = [p.strip() for p in planet.split(",")]
 
@@ -111,8 +103,6 @@ async def search_planets_async(
         InvalidLimitError: If limit or top_resources is invalid.
         TooManyResourcesError: If more than 4 include resources specified.
     """
-    from prun_mcp.fio import get_fio_client
-
     if limit < 1:
         raise InvalidLimitError("limit must be at least 1")
     if top_resources < 1:
