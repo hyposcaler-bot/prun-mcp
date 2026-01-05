@@ -8,8 +8,9 @@ import pytest
 from toon_format import decode as toon_decode
 
 from prun_mcp.cache import BuildingsCache, RecipesCache, WorkforceCache
+from prun_mcp.prun_lib.base import calculate_area_limit
 from prun_mcp.resources.workforce import HABITATION_CAPACITY
-from prun_mcp.tools.permit_io import calculate_area_limit, calculate_permit_io
+from prun_mcp.tools.permit_io import calculate_permit_io
 
 # Default price for missing tickers
 DEFAULT_PRICE: dict[str, float | None] = {"ask": None, "bid": None}
@@ -211,7 +212,7 @@ class TestCalculatePermitIoValidation:
             exchange="CI1",
         )
         assert len(result) == 1
-        assert "Unknown habitation building" in result[0].text
+        assert "unknown building" in result[0].text
 
 
 class TestCalculatePermitIo:
@@ -231,18 +232,18 @@ class TestCalculatePermitIo:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -279,18 +280,18 @@ class TestCalculatePermitIo:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -321,18 +322,18 @@ class TestCalculatePermitIo:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -363,18 +364,18 @@ class TestCalculatePermitIo:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -443,18 +444,18 @@ class TestAreaValidation:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_permit_io(
                 production=[
@@ -488,18 +489,18 @@ class TestAreaValidation:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             # 42 FP * 12 = 504 area (over 500 limit)
             result = await calculate_permit_io(
@@ -536,18 +537,18 @@ class TestAreaValidation:
 
         with (
             patch(
-                "prun_mcp.tools.permit_io.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.permit_io.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.permit_io.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             # 42 FP * 12 = 504 area (under 750 limit with 2 permits)
             result = await calculate_permit_io(

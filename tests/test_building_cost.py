@@ -187,11 +187,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -232,11 +232,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -267,11 +267,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -302,11 +302,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -337,11 +337,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -372,11 +372,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -407,11 +407,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -442,11 +442,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -478,15 +478,15 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
             patch(
-                "prun_mcp.tools.building_cost.fetch_prices",
+                "prun_mcp.utils.fetch_prices",
                 mock_fetch_prices,
             ),
         ):
@@ -537,7 +537,7 @@ class TestCalculateBuildingCost:
             return buildings_cache
 
         with patch(
-            "prun_mcp.tools.building_cost.ensure_buildings_cache",
+            "prun_mcp.cache.ensure_buildings_cache",
             mock_ensure_cache,
         ):
             result = await calculate_building_cost(
@@ -562,11 +562,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):
@@ -588,7 +588,7 @@ class TestCalculateBuildingCost:
             raise FIOApiError("Server error", status_code=500)
 
         with patch(
-            "prun_mcp.tools.building_cost.ensure_buildings_cache",
+            "prun_mcp.cache.ensure_buildings_cache",
             mock_ensure_cache,
         ):
             result = await calculate_building_cost(
@@ -624,15 +624,15 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
             patch(
-                "prun_mcp.tools.building_cost.fetch_prices",
+                "prun_mcp.utils.fetch_prices",
                 mock_fetch_prices,
             ),
         ):
@@ -659,11 +659,11 @@ class TestCalculateBuildingCost:
 
         with (
             patch(
-                "prun_mcp.tools.building_cost.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 mock_ensure_cache,
             ),
             patch(
-                "prun_mcp.tools.building_cost.get_fio_client",
+                "prun_mcp.fio.get_fio_client",
                 return_value=mock_client,
             ),
         ):

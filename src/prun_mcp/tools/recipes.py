@@ -1,19 +1,19 @@
 """Recipe-related MCP tools."""
 
 import logging
-from typing import Any
 
 from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.cache import (
-    ensure_buildings_cache,
-    ensure_recipes_cache,
-    get_recipes_cache,
+from prun_mcp.fio import FIOApiError
+from prun_mcp.prun_lib.recipes import (
+    RecipeNotFoundError,
+    UnknownBuildingError,
+    get_recipe_info_async,
+    refresh_recipes_cache_async,
+    search_recipes_async,
 )
-from prun_mcp.fio import FIOApiError, get_fio_client
-from prun_mcp.models.fio import FIORecipe
 
 logger = logging.getLogger(__name__)
 
@@ -30,35 +30,11 @@ async def get_recipe_info(ticker: str) -> str | list[TextContent]:
         TOON-encoded recipe data including building, inputs, outputs, and duration.
     """
     try:
-        cache = await ensure_recipes_cache()
-        tickers = [t.strip().upper() for t in ticker.split(",")]
-
-        recipes: list[dict[str, Any]] = []
-        not_found = []
-
-        for t in tickers:
-            t_recipes = cache.get_recipes_by_output(t)
-            if not t_recipes:
-                not_found.append(t)
-            else:
-                for r in t_recipes:
-                    recipe = FIORecipe.model_validate(r)
-                    recipes.append(recipe.model_dump(by_alias=True))
-
-        if not recipes and not_found:
-            return [
-                TextContent(
-                    type="text",
-                    text=f"No recipes found that produce: {', '.join(not_found)}",
-                )
-            ]
-
-        result: dict[str, Any] = {"recipes": recipes}
-        if not_found:
-            result["not_found"] = not_found
-
+        result = await get_recipe_info_async(ticker)
         return toon_encode(result)
 
+    except RecipeNotFoundError as e:
+        return [TextContent(type="text", text=str(e))]
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")
         return [TextContent(type="text", text=f"FIO API error: {e}")]
@@ -83,32 +59,15 @@ async def search_recipes(
         TOON-encoded list of matching recipes.
     """
     try:
-        # Validate building ticker if provided
-        if building:
-            buildings_cache = await ensure_buildings_cache()
-            building_upper = building.upper()
-            if not buildings_cache.get_building(building_upper):
-                return [
-                    TextContent(
-                        type="text",
-                        text=f"Unknown building ticker: {building_upper}",
-                    )
-                ]
-
-        cache = await ensure_recipes_cache()
-        raw_recipes = cache.search_recipes(
+        result = await search_recipes_async(
             building=building,
             input_tickers=input_tickers,
             output_tickers=output_tickers,
         )
+        return toon_encode(result)
 
-        recipes: list[dict[str, Any]] = []
-        for r in raw_recipes:
-            recipe = FIORecipe.model_validate(r)
-            recipes.append(recipe.model_dump(by_alias=True))
-
-        return toon_encode({"recipes": recipes})
-
+    except UnknownBuildingError as e:
+        return [TextContent(type="text", text=str(e))]
     except FIOApiError as e:
         logger.exception("FIO API error while fetching recipes")
         return [TextContent(type="text", text=f"FIO API error: {e}")]
@@ -124,14 +83,7 @@ async def refresh_recipes_cache() -> str:
         Status message with the number of recipes cached.
     """
     try:
-        cache = get_recipes_cache()
-        cache.invalidate()
-
-        client = get_fio_client()
-        recipes = await client.get_all_recipes()
-        cache.refresh(recipes)
-
-        return f"Cache refreshed with {cache.recipe_count()} recipes"
+        return await refresh_recipes_cache_async()
 
     except FIOApiError as e:
         logger.exception("FIO API error while refreshing recipes cache")

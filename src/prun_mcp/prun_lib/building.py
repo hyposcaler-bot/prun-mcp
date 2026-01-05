@@ -8,6 +8,7 @@ from prun_mcp.models.domain import (
     MaterialCost,
 )
 from prun_mcp.models.fio import FIOBuilding, FIOPlanet
+from prun_mcp.prun_lib.exchange import InvalidExchangeError, validate_exchange
 
 # Environment thresholds for infrastructure costs
 ENV_THRESHOLDS = {
@@ -233,4 +234,87 @@ def calculate_building_cost(
         exchange=exchange,
         total_cost=round(total_cost, 2) if exchange else None,
         missing_prices=missing_prices,
+    )
+
+
+class BuildingNotFoundError(BuildingCostError):
+    """Building not found in cache."""
+
+    def __init__(self, building_ticker: str) -> None:
+        self.building_ticker = building_ticker
+        super().__init__(f"Building not found: {building_ticker}")
+
+
+class PlanetNotFoundError(BuildingCostError):
+    """Planet not found in API."""
+
+    def __init__(self, planet: str) -> None:
+        self.planet = planet
+        super().__init__(f"Planet not found: {planet}")
+
+
+async def calculate_building_cost_async(
+    building_ticker: str,
+    planet: str,
+    exchange: str | None = None,
+) -> BuildingCostResult:
+    """Calculate complete building cost for a planet.
+
+    This is the main entry point that handles validation, data fetching,
+    and calculation.
+
+    Args:
+        building_ticker: Building ticker (e.g., "FP", "HB1", "FRM").
+        planet: Planet identifier (name, natural ID, or planet ID).
+        exchange: Optional exchange code for cost calculation (e.g., "CI1").
+
+    Returns:
+        BuildingCostResult with all materials and costs.
+
+    Raises:
+        InvalidExchangeError: If exchange code is invalid.
+        BuildingNotFoundError: If building is not found in cache.
+        PlanetNotFoundError: If planet is not found in API.
+        InfertilePlanetError: If building requires fertility and planet is infertile.
+    """
+    from prun_mcp.cache import ensure_buildings_cache
+    from prun_mcp.fio import FIONotFoundError, get_fio_client
+    from prun_mcp.utils import fetch_prices
+
+    # Validate exchange if provided
+    validated_exchange = validate_exchange(exchange)
+    if exchange is not None and validated_exchange is None:
+        raise InvalidExchangeError(f"Invalid exchange: {exchange}")
+
+    building_ticker = building_ticker.strip().upper()
+
+    # Get building from cache
+    cache = await ensure_buildings_cache()
+    building_data = cache.get_building(building_ticker)
+    if building_data is None:
+        raise BuildingNotFoundError(building_ticker)
+    building = FIOBuilding.model_validate(building_data)
+
+    # Get planet from API
+    client = get_fio_client()
+    try:
+        planet_data = await client.get_planet(planet)
+    except FIONotFoundError:
+        raise PlanetNotFoundError(planet)
+    planet_model = FIOPlanet.model_validate(planet_data)
+
+    # Fetch prices if exchange provided
+    prices: dict[str, dict[str, float | None]] | None = None
+    if validated_exchange:
+        building_materials = {c.commodity_ticker for c in building.building_costs}
+        infra_materials = get_required_infrastructure_materials(planet_model)
+        all_tickers = sorted(building_materials | infra_materials)
+        prices = await fetch_prices(all_tickers, validated_exchange)
+
+    # Calculate and return
+    return calculate_building_cost(
+        building=building,
+        planet=planet_model,
+        prices=prices,
+        exchange=validated_exchange,
     )

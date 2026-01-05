@@ -7,22 +7,18 @@ from mcp.types import TextContent
 from toon_format import encode as toon_encode
 
 from prun_mcp.app import mcp
-from prun_mcp.storage import BasePlanStorage
-from prun_mcp.tools.permit_io import calculate_permit_io
-from prun_mcp.utils import prettify_names
+from prun_mcp.fio import FIOApiError
+from prun_mcp.prun_lib.base_plans import (
+    PlanNotFoundError,
+    PlanSaveError,
+    calculate_plan_io_async,
+    delete_base_plan_async,
+    get_base_plan_async,
+    list_base_plans_async,
+    save_base_plan_async,
+)
 
 logger = logging.getLogger(__name__)
-
-# Shared storage instance (singleton pattern)
-_base_plan_storage: BasePlanStorage | None = None
-
-
-def get_base_plan_storage() -> BasePlanStorage:
-    """Get or create the shared base plan storage."""
-    global _base_plan_storage
-    if _base_plan_storage is None:
-        _base_plan_storage = BasePlanStorage()
-    return _base_plan_storage
 
 
 @mcp.tool()
@@ -76,41 +72,24 @@ async def save_base_plan(
     Returns:
         TOON-encoded saved plan with any validation warnings.
     """
-    # Build plan dictionary
-    plan: dict[str, Any] = {
-        "name": name,
-        "planet": planet,
-        "habitation": habitation,
-        "production": production,
-        "active": active,
-    }
-
-    if planet_name:
-        plan["planet_name"] = planet_name
-    if cogc_program:
-        plan["cogc_program"] = cogc_program
-    if expertise:
-        plan["expertise"] = expertise
-    if storage:
-        plan["storage"] = storage
-    if extraction:
-        plan["extraction"] = extraction
-    if notes:
-        plan["notes"] = notes
-
-    # Save to storage
-    storage_instance = get_base_plan_storage()
     try:
-        saved_plan, warnings = storage_instance.save_plan(plan, overwrite=overwrite)
-    except ValueError as e:
+        result = await save_base_plan_async(
+            name=name,
+            planet=planet,
+            habitation=habitation,
+            production=production,
+            planet_name=planet_name,
+            cogc_program=cogc_program,
+            expertise=expertise,
+            storage=storage,
+            extraction=extraction,
+            notes=notes,
+            active=active,
+            overwrite=overwrite,
+        )
+        return toon_encode(result)
+    except PlanSaveError as e:
         return [TextContent(type="text", text=str(e))]
-
-    # Build response
-    result: dict[str, Any] = {"plan": saved_plan}
-    if warnings:
-        result["warnings"] = warnings
-
-    return toon_encode(prettify_names(result))
 
 
 @mcp.tool()
@@ -123,13 +102,11 @@ async def get_base_plan(name: str) -> str | list[TextContent]:
     Returns:
         TOON-encoded plan data or error if not found.
     """
-    storage_instance = get_base_plan_storage()
-    plan = storage_instance.get_plan(name)
-
-    if plan is None:
-        return [TextContent(type="text", text=f"Plan not found: {name}")]
-
-    return toon_encode(prettify_names(plan))
+    try:
+        result = await get_base_plan_async(name)
+        return toon_encode(result)
+    except PlanNotFoundError as e:
+        return [TextContent(type="text", text=str(e))]
 
 
 @mcp.tool()
@@ -150,10 +127,8 @@ async def list_base_plans(active: bool | None = None) -> str:
         - active: Whether the plan is active
         - updated_at: Last update timestamp
     """
-    storage_instance = get_base_plan_storage()
-    plans = storage_instance.list_plans(active=active)
-
-    return toon_encode({"plans": plans})
+    result = await list_base_plans_async(active=active)
+    return toon_encode(result)
 
 
 @mcp.tool()
@@ -166,13 +141,11 @@ async def delete_base_plan(name: str) -> str | list[TextContent]:
     Returns:
         Success confirmation or error if not found.
     """
-    storage_instance = get_base_plan_storage()
-    deleted = storage_instance.delete_plan(name)
-
-    if not deleted:
-        return [TextContent(type="text", text=f"Plan not found: {name}")]
-
-    return toon_encode({"deleted": name, "success": True})
+    try:
+        result = await delete_base_plan_async(name)
+        return toon_encode(result)
+    except PlanNotFoundError as e:
+        return [TextContent(type="text", text=str(e))]
 
 
 @mcp.tool()
@@ -198,46 +171,11 @@ async def calculate_plan_io(
         - area: Used vs limit validation
         - totals: Net CIS/day
     """
-    storage_instance = get_base_plan_storage()
-    plan = storage_instance.get_plan(name)
-
-    if plan is None:
-        return [TextContent(type="text", text=f"Plan not found: {name}")]
-
-    # Transform plan data to calculate_permit_io format
-    production = [
-        {
-            "recipe": p["recipe"],
-            "count": p["count"],
-            "efficiency": p.get("efficiency", 1.0),
-        }
-        for p in plan.get("production", [])
-    ]
-
-    habitation = [
-        {"building": h["building"], "count": h["count"]}
-        for h in plan.get("habitation", [])
-    ]
-
-    # Extract extraction data if present
-    extraction = None
-    if plan.get("extraction"):
-        extraction = [
-            {
-                "building": e["building"],
-                "resource": e["resource"],
-                "count": e["count"],
-                "efficiency": e.get("efficiency", 1.0),
-            }
-            for e in plan["extraction"]
-        ]
-
-    # Call calculate_permit_io with extracted data
-    return await calculate_permit_io(
-        production=production,
-        habitation=habitation,
-        exchange=exchange,
-        permits=1,  # Could be added to plan schema in future
-        extraction=extraction,
-        planet=plan.get("planet") if extraction else None,
-    )
+    try:
+        result = await calculate_plan_io_async(name=name, exchange=exchange)
+        return toon_encode(result)
+    except PlanNotFoundError as e:
+        return [TextContent(type="text", text=str(e))]
+    except FIOApiError as e:
+        logger.exception("FIO API error while calculating plan I/O")
+        return [TextContent(type="text", text=f"FIO API error: {e}")]

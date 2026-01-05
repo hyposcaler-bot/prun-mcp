@@ -117,18 +117,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -170,18 +170,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -219,15 +219,15 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
         ):
@@ -252,7 +252,7 @@ class TestCalculateCogm:
         assert isinstance(result, list)
         assert len(result) == 1
         assert isinstance(result[0], TextContent)
-        assert "efficiency" in result[0].text
+        assert "Efficiency" in result[0].text
 
     async def test_api_error(self, tmp_path: Path) -> None:
         """Test COGM calculation handles API errors gracefully."""
@@ -260,7 +260,7 @@ class TestCalculateCogm:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.tools.cogm.ensure_buildings_cache", mock_ensure):
+        with patch("prun_mcp.cache.ensure_buildings_cache", mock_ensure):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
                 exchange="CI1",
@@ -293,18 +293,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -334,18 +334,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -400,18 +400,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             # Without self-consume
             result_normal = await calculate_cogm(
@@ -455,18 +455,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -506,18 +506,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",
@@ -548,18 +548,18 @@ class TestCalculateCogm:
 
         with (
             patch(
-                "prun_mcp.tools.cogm.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=recipes_cache),
             ),
             patch(
-                "prun_mcp.tools.cogm.ensure_workforce_cache",
+                "prun_mcp.cache.ensure_workforce_cache",
                 AsyncMock(return_value=workforce_cache),
             ),
-            patch("prun_mcp.tools.cogm.fetch_prices", mock_fetch_prices),
+            patch("prun_mcp.utils.fetch_prices", mock_fetch_prices),
         ):
             result = await calculate_cogm(
                 recipe="1xGRN 1xBEA 1xNUT=>10xRAT",

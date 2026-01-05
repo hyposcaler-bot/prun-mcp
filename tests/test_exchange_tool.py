@@ -27,7 +27,7 @@ class TestGetExchangePrices:
         mock_client = AsyncMock()
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT", "CI1")
 
         assert isinstance(result, str)
@@ -50,7 +50,7 @@ class TestGetExchangePrices:
         mock_client = AsyncMock()
         mock_client.get_exchange_info.return_value = SAMPLE_EXCHANGE_RAT_CI1
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("rat", "ci1")
 
         assert isinstance(result, str)
@@ -64,7 +64,7 @@ class TestGetExchangePrices:
             SAMPLE_EXCHANGE_BSE_CI1,
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT,BSE", "CI1")
 
         assert isinstance(result, str)
@@ -84,7 +84,7 @@ class TestGetExchangePrices:
             SAMPLE_EXCHANGE_BSE_CI1,
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT, BSE", "CI1")
 
         assert isinstance(result, str)
@@ -101,7 +101,7 @@ class TestGetExchangePrices:
             SAMPLE_EXCHANGE_BSE_CI1,
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT,INVALID,BSE", "CI1")
 
         assert isinstance(result, str)
@@ -126,7 +126,7 @@ class TestGetExchangePrices:
             FIONotFoundError("Exchange", "INVALID2.CI1"),
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("INVALID1,INVALID2", "CI1")
 
         assert isinstance(result, list)
@@ -153,7 +153,7 @@ class TestGetExchangePrices:
             "Server error", status_code=500
         )
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT", "CI1")
 
         assert isinstance(result, list)
@@ -170,7 +170,7 @@ class TestGetExchangeAll:
         mock_client = AsyncMock()
         mock_client.get_all_exchange_data.return_value = SAMPLE_EXCHANGE_ALL
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("CI1")
 
         assert isinstance(result, str)
@@ -191,7 +191,7 @@ class TestGetExchangeAll:
         mock_client = AsyncMock()
         mock_client.get_all_exchange_data.return_value = SAMPLE_EXCHANGE_ALL
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("ci1")
 
         assert isinstance(result, str)
@@ -204,7 +204,7 @@ class TestGetExchangeAll:
         mock_client = AsyncMock()
         mock_client.get_all_exchange_data.return_value = SAMPLE_EXCHANGE_ALL
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("NC1")
 
         assert isinstance(result, str)
@@ -231,7 +231,7 @@ class TestGetExchangeAll:
             "Server error", status_code=500
         )
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("CI1")
 
         assert isinstance(result, list)
@@ -244,7 +244,7 @@ class TestGetExchangeAll:
         mock_client = AsyncMock()
         mock_client.get_all_exchange_data.return_value = SAMPLE_EXCHANGE_ALL
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("CI1,NC1")
 
         assert isinstance(result, str)
@@ -262,7 +262,7 @@ class TestGetExchangeAll:
         mock_client = AsyncMock()
         mock_client.get_all_exchange_data.return_value = SAMPLE_EXCHANGE_ALL
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_all("CI1, NC1")
 
         assert isinstance(result, str)
@@ -282,7 +282,7 @@ class TestGetExchangePricesMultiExchange:
         rat_nc1["ExchangeCode"] = "NC1"
         mock_client.get_exchange_info.side_effect = [SAMPLE_EXCHANGE_RAT_CI1, rat_nc1]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT", "CI1,NC1")
 
         assert isinstance(result, str)
@@ -309,7 +309,7 @@ class TestGetExchangePricesMultiExchange:
             bse_nc1,
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT,BSE", "CI1,NC1")
 
         assert isinstance(result, str)
@@ -332,7 +332,7 @@ class TestGetExchangePricesMultiExchange:
             FIONotFoundError("Exchange", "RAT.NC1"),
         ]
 
-        with patch("prun_mcp.tools.exchange.get_fio_client", return_value=mock_client):
+        with patch("prun_mcp.fio.get_fio_client", return_value=mock_client):
             result = await get_exchange_prices("RAT", "CI1,NC1")
 
         assert isinstance(result, str)

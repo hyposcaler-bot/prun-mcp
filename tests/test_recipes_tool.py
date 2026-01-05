@@ -36,7 +36,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT")
 
@@ -58,7 +58,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("rat")
 
@@ -72,7 +72,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT,BSE")
 
@@ -87,7 +87,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT, BSE")
 
@@ -101,7 +101,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT,INVALID,BSE")
 
@@ -121,7 +121,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("INVALID1,INVALID2")
 
@@ -138,7 +138,7 @@ class TestGetRecipeInfo:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.tools.recipes.ensure_recipes_cache", mock_ensure):
+        with patch("prun_mcp.cache.ensure_recipes_cache", mock_ensure):
             result = await get_recipe_info("RAT")
 
         assert isinstance(result, list)
@@ -151,7 +151,7 @@ class TestGetRecipeInfo:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await get_recipe_info("RAT")
 
@@ -166,7 +166,7 @@ class TestSearchRecipes:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await search_recipes()
 
@@ -190,11 +190,11 @@ class TestSearchRecipes:
 
         with (
             patch(
-                "prun_mcp.tools.recipes.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=cache),
             ),
             patch(
-                "prun_mcp.tools.recipes.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
         ):
@@ -213,7 +213,7 @@ class TestSearchRecipes:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await search_recipes(input_tickers=["GRN", "BEA"])
 
@@ -229,7 +229,7 @@ class TestSearchRecipes:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await search_recipes(output_tickers=["RAT"])
 
@@ -251,11 +251,11 @@ class TestSearchRecipes:
 
         with (
             patch(
-                "prun_mcp.tools.recipes.ensure_recipes_cache",
+                "prun_mcp.cache.ensure_recipes_cache",
                 AsyncMock(return_value=cache),
             ),
             patch(
-                "prun_mcp.tools.recipes.ensure_buildings_cache",
+                "prun_mcp.cache.ensure_buildings_cache",
                 AsyncMock(return_value=buildings_cache),
             ),
         ):
@@ -274,7 +274,7 @@ class TestSearchRecipes:
         cache = create_populated_cache(tmp_path)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_recipes_cache", AsyncMock(return_value=cache)
+            "prun_mcp.cache.ensure_recipes_cache", AsyncMock(return_value=cache)
         ):
             result = await search_recipes()
 
@@ -286,7 +286,7 @@ class TestSearchRecipes:
             side_effect=FIOApiError("Server error", status_code=500)
         )
 
-        with patch("prun_mcp.tools.recipes.ensure_recipes_cache", mock_ensure):
+        with patch("prun_mcp.cache.ensure_recipes_cache", mock_ensure):
             result = await search_recipes()
 
         assert isinstance(result, list)
@@ -305,7 +305,7 @@ class TestSearchRecipes:
         buildings_cache.refresh(SAMPLE_BUILDINGS)
 
         with patch(
-            "prun_mcp.tools.recipes.ensure_buildings_cache",
+            "prun_mcp.cache.ensure_buildings_cache",
             AsyncMock(return_value=buildings_cache),
         ):
             result = await search_recipes(building="INVALID")
@@ -328,8 +328,8 @@ class TestRefreshRecipesCache:
         mock_client.get_all_recipes.return_value = SAMPLE_RECIPES
 
         with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.cache.get_recipes_cache", return_value=cache),
+            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
         ):
             result = await refresh_recipes_cache()
 
@@ -357,8 +357,8 @@ class TestRefreshRecipesCache:
         mock_client.get_all_recipes.return_value = SAMPLE_RECIPES
 
         with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.cache.get_recipes_cache", return_value=cache),
+            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
         ):
             await refresh_recipes_cache()
 
@@ -376,8 +376,8 @@ class TestRefreshRecipesCache:
         )
 
         with (
-            patch("prun_mcp.tools.recipes.get_recipes_cache", return_value=cache),
-            patch("prun_mcp.tools.recipes.get_fio_client", return_value=mock_client),
+            patch("prun_mcp.cache.get_recipes_cache", return_value=cache),
+            patch("prun_mcp.fio.get_fio_client", return_value=mock_client),
         ):
             result = await refresh_recipes_cache()
 

@@ -1,0 +1,98 @@
+"""Materials business logic."""
+
+from typing import Any
+
+
+class MaterialsError(Exception):
+    """Base error for materials operations."""
+
+    pass
+
+
+class MaterialNotFoundError(MaterialsError):
+    """Material not found in cache."""
+
+    def __init__(self, identifiers: list[str]) -> None:
+        self.identifiers = identifiers
+        super().__init__(f"Materials not found: {', '.join(identifiers)}")
+
+
+async def get_material_info_async(ticker: str) -> dict[str, Any]:
+    """Get information about a material by its ticker symbol.
+
+    Args:
+        ticker: Material ticker symbol(s). Single or comma-separated.
+                Also accepts MaterialId (32-character hex string).
+
+    Returns:
+        Dict with 'materials' list and optional 'not_found' list.
+
+    Raises:
+        MaterialNotFoundError: If all requested materials are not found.
+    """
+    from prun_mcp.cache import ensure_materials_cache
+    from prun_mcp.models.fio import FIOMaterial
+
+    cache = await ensure_materials_cache()
+    identifiers = [t.strip() for t in ticker.split(",")]
+
+    materials: list[dict[str, Any]] = []
+    not_found: list[str] = []
+
+    for identifier in identifiers:
+        data = cache.get_material(identifier)
+        if data is None:
+            not_found.append(identifier)
+        else:
+            material = FIOMaterial.model_validate(data)
+            materials.append(material.model_dump(by_alias=True))
+
+    if not materials and not_found:
+        raise MaterialNotFoundError(not_found)
+
+    result: dict[str, Any] = {"materials": materials}
+    if not_found:
+        result["not_found"] = not_found
+
+    return result
+
+
+async def refresh_materials_cache_async() -> str:
+    """Refresh the materials cache from FIO API.
+
+    Forces a fresh download of all materials data, bypassing the TTL.
+
+    Returns:
+        Status message with the number of materials cached.
+    """
+    from prun_mcp.cache import get_materials_cache
+    from prun_mcp.fio import get_fio_client
+
+    cache = get_materials_cache()
+    cache.invalidate()
+
+    client = get_fio_client()
+    materials = await client.get_all_materials()
+    cache.refresh(materials)
+
+    return f"Cache refreshed with {cache.material_count()} materials"
+
+
+async def get_all_materials_async() -> dict[str, Any]:
+    """Get all materials from the cache.
+
+    Returns:
+        Dict with 'materials' list containing all materials.
+    """
+    from prun_mcp.cache import ensure_materials_cache
+    from prun_mcp.models.fio import FIOMaterial
+
+    cache = await ensure_materials_cache()
+    all_materials = cache.get_all_materials()
+
+    materials: list[dict[str, Any]] = []
+    for m in all_materials:
+        material = FIOMaterial.model_validate(m)
+        materials.append(material.model_dump(by_alias=True))
+
+    return {"materials": materials}
