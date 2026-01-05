@@ -48,10 +48,12 @@ Resources provide static reference data and documentation via MCP resource URIs.
 
 ## Issues / Areas in Flux
 
-### 1. Inconsistent Export Patterns
-- `__init__.py` only exports from `extraction.py`
-- Other modules are imported directly where needed
-- Should all canonical data (WORKFORCE_TYPES, EXCHANGES, etc.) be centralized?
+> **Note:** With the introduction of `prun_lib/` as a separate business logic layer, some of these issues have been partially addressed. Business logic now lives in `prun_lib/`, while `resources/` is intended for static reference data exposed via MCP resources.
+
+### 1. Export Patterns (Partially Resolved)
+- `prun_lib/__init__.py` now provides centralized exports for business logic
+- `resources/` modules are imported directly where needed for static data
+- Canonical data like `WORKFORCE_TYPES`, `EXCHANGES` still spread across modules
 
 ### 2. Overlapping Documentation
 - `buildings.py` has hand-written efficiency docs
@@ -61,8 +63,8 @@ Resources provide static reference data and documentation via MCP resource URIs.
 
 ### 3. extraction.py Placement
 - Contains constants + calculation logic, not MCP resources
-- Should it be in `resources/` or a separate `utils/` or `constants/` module?
-- Currently exported from `resources/__init__.py` which is confusing
+- With `prun_lib/` now established, calculation logic could move there
+- Constants could remain in `resources/` as reference data
 
 ### 4. Data Duplication
 - Workforce types defined in `workforce.py`
@@ -88,10 +90,10 @@ No clear convention. Consider standardizing (e.g., all plural or all singular).
 
 ## Recommendations
 
-1. **Move extraction.py** to a new `utils/` or `constants/` package
-2. **Centralize canonical data exports** in `resources/__init__.py`
-3. **Deprecate overlapping docs** in `buildings.py` in favor of `pct-mechanics://`
-4. **Add extraction resource** to expose EXT/RIG/COL as MCP resource
+1. **Split extraction.py**: Move calculation logic to `prun_lib/extraction.py`, keep constants in `resources/`
+2. **Centralize canonical data**: Consider exporting WORKFORCE_TYPES, EXCHANGES from a single location
+3. **Deprecate overlapping docs** in `buildings.py` in favor of `pct-mechanics://` where formulas are maintained
+4. **Add extraction resource** to expose EXT/RIG/COL specs as MCP resource
 5. **Document URI scheme convention** and apply consistently
 
 ---

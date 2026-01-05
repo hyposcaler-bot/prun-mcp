@@ -69,8 +69,21 @@ class RecipeNotFoundError(Exception):
 
 
 class MaterialNotFoundError(Exception):
-    """Material not found in cache."""
+    """Material not found in cache.
 
-    def __init__(self, identifiers: list[str]) -> None:
-        self.identifiers = identifiers
-        super().__init__(f"Materials not found: {', '.join(identifiers)}")
+    Accepts either a single material ticker or a list of identifiers.
+    """
+
+    def __init__(self, identifier: str | list[str]) -> None:
+        if isinstance(identifier, list):
+            self.identifiers = identifier
+            msg = f"Materials not found: {', '.join(identifier)}"
+        else:
+            self.identifiers = [identifier]
+            msg = f"Material not found: {identifier}"
+        super().__init__(msg)
+
+    @property
+    def material_ticker(self) -> str:
+        """Return the first identifier (for single-material lookups)."""
+        return self.identifiers[0]

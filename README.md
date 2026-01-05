@@ -160,39 +160,56 @@ prun-mcp/
 │   ├── __init__.py
 │   ├── app.py              # FastMCP instance
 │   ├── server.py           # Entry point
-│   ├── fio/
+│   ├── fio/                # FIO API client
 │   │   ├── __init__.py
 │   │   ├── client.py       # HTTP client for FIO API
 │   │   └── exceptions.py   # Custom exceptions
-│   ├── cache/
+│   ├── cache/              # JSON-based caching layer (24h TTL)
 │   │   ├── __init__.py
-│   │   ├── materials_cache.py  # Materials cache (JSON-based, 24h TTL)
-│   │   ├── buildings_cache.py  # Buildings cache (JSON-based, 24h TTL)
-│   │   ├── recipes_cache.py    # Recipes cache (JSON-based, 24h TTL)
-│   │   └── workforce_cache.py  # Workforce needs cache (JSON-based, 24h TTL)
-│   ├── storage/
+│   │   ├── materials_cache.py
+│   │   ├── buildings_cache.py
+│   │   ├── recipes_cache.py
+│   │   └── workforce_cache.py
+│   ├── models/             # Pydantic models for type safety
 │   │   ├── __init__.py
-│   │   ├── base_plan_storage.py  # Base plan persistent storage
+│   │   ├── fio.py          # FIO API response models
+│   │   └── domain.py       # Domain output models (COGM, BuildingCost, etc.)
+│   ├── prun_lib/           # Business logic layer (reusable as standalone library)
+│   │   ├── __init__.py     # Public API exports
+│   │   ├── exceptions.py   # Unified exception classes
+│   │   ├── building.py     # Building cost calculations
+│   │   ├── cogm.py         # COGM (Cost of Goods Manufactured) calculations
+│   │   ├── market.py       # Market analysis logic
+│   │   ├── base_io.py      # Base I/O calculations
+│   │   ├── exchange.py     # Exchange validation and data fetching
+│   │   └── ...             # Additional business logic modules
+│   ├── storage/            # Persistent storage
+│   │   ├── __init__.py
+│   │   ├── base_plan_storage.py  # Base plan JSON storage
 │   │   └── validation.py         # Plan validation rules
-│   ├── resources/
+│   ├── resources/          # Static reference data (MCP resources)
 │   │   ├── __init__.py
 │   │   ├── buildings.py    # Building efficiency documentation
 │   │   ├── exchanges.py    # Exchange data resource
-│   │   ├── extraction.py   # Extraction building constants (EXT, RIG, COL)
+│   │   ├── extraction.py   # Extraction building constants
 │   │   ├── mechanics.py    # Community mechanics resources
-│   │   └── workforce.py    # Workforce types and habitation resource
-│   └── tools/
+│   │   └── workforce.py    # Workforce types and habitation
+│   └── tools/              # Thin MCP tool wrappers
 │       ├── __init__.py
 │       ├── materials.py        # Material-related tools
 │       ├── buildings.py        # Building-related tools
-│       ├── planets.py          # Planet-related tools (no cache)
+│       ├── planets.py          # Planet-related tools
 │       ├── recipes.py          # Recipe-related tools
-│       ├── exchange.py         # Exchange/pricing tools (no cache)
-│       ├── market_analysis.py  # Market analysis tools (no cache)
+│       ├── exchange.py         # Exchange/pricing tools
+│       ├── market_analysis.py  # Market analysis tools
 │       ├── cogm.py             # COGM calculation tool
+│       ├── building_cost.py    # Building cost calculation tool
 │       ├── permit_io.py        # Permit I/O calculation tool
-│       └── base_plans.py       # Base plan management tools
+│       ├── base_plans.py       # Base plan management tools
+│       └── info.py             # Server info tools (version, cache status)
 ```
+
+**Architecture Note:** Tools are "ultra-thin" wrappers that validate input, delegate to `prun_lib` for business logic, and serialize output with TOON. This separation allows `prun_lib` to be used as a standalone library for Prosperous Universe calculations.
 
 ## License
 

@@ -3,6 +3,10 @@
 This module provides reusable game logic functions that are independent
 of the MCP presentation layer. Functions here accept and return typed
 Pydantic models.
+
+Note: Most entry point functions are async and require await. Functions
+with the `_async` suffix are explicitly async; others may also be async
+depending on whether they need to fetch data from caches or the FIO API.
 """
 
 # Main entry point functions
